@@ -149,3 +149,9 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log("🚀 Server running on port " + PORT);
 });
+let supports = [];
+
+app.post("/support", (req,res)=>{
+  supports.push(req.body);
+  res.json({success:true});
+});
