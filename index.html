@@ -319,6 +319,38 @@ transition:0.3s;
 </button>
 
 </div>
+  <script>
+
+function openSupport(){
+  document.getElementById("supportBox").style.bottom = "20px";
+}
+
+function closeSupport(){
+  document.getElementById("supportBox").style.bottom = "-400px";
+}
+
+async function sendSupport(){
+
+  const name = document.getElementById("supName").value;
+  const msg = document.getElementById("supMsg").value;
+
+  if(!name || !msg){
+    alert("پر کن ❌");
+    return;
+  }
+
+  await fetch("/support", {
+    method:"POST",
+    headers:{ "Content-Type":"application/json" },
+    body: JSON.stringify({ name, msg })
+  });
+
+  alert("ارسال شد ✅");
+
+  document.getElementById("supMsg").value = "";
+}
+
+</script>
 </body>
 </html>
 <button onclick="openSupport()" style="margin-right:10px;background:black;color:white;padding:10px;border-radius:10px;">
