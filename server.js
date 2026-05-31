@@ -168,5 +168,16 @@ app.listen(PORT, () => {
    app.get("/", (req, res) => {
   res.sendFile(__dirname + "/index.html");
 });
+   app.get("/admin.html", (req, res) => {
+  res.sendFile(__dirname + "/admin.html");
+});
+
+app.get("/login.html", (req, res) => {
+  res.sendFile(__dirname + "/login.html");
+});
+
+app.get("/", (req, res) => {
+  res.sendFile(__dirname + "/index.html");
+});
   console.log("🚀 Server running on port " + PORT);
 });
