@@ -6,11 +6,7 @@
 <title>مزون ایلا</title>
 
 <style>
-*{
-  margin:0;
-  padding:0;
-  box-sizing:border-box;
-}
+*{margin:0;padding:0;box-sizing:border-box;}
 
 body{
   font-family:tahoma;
@@ -28,127 +24,108 @@ body{
   box-shadow:0 2px 10px rgba(0,0,0,0.08);
   position:sticky;
   top:0;
-  z-index:100;
 }
 
 .logo{
   color:red;
-  font-size:32px;
+  font-size:28px;
   font-weight:bold;
 }
 
 .cartBtn{
   background:red;
   color:white;
-  padding:12px 20px;
-  border-radius:12px;
+  padding:10px 15px;
+  border-radius:10px;
   cursor:pointer;
 }
 
 /* محصولات */
 #products{
   display:grid;
-  grid-template-columns:repeat(auto-fill,minmax(250px,1fr));
-  gap:25px;
-  padding:30px;
+  grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+  gap:20px;
+  padding:20px;
 }
 
 .card{
   background:white;
-  border-radius:20px;
+  border-radius:15px;
   overflow:hidden;
   box-shadow:0 0 10px rgba(0,0,0,0.08);
 }
 
 .card img{
   width:100%;
-  height:280px;
+  height:250px;
   object-fit:cover;
 }
 
-.info{
-  padding:15px;
-}
+.info{padding:10px;}
 
-.price{
-  color:red;
-  font-size:22px;
-  font-weight:bold;
-}
+.price{color:red;font-weight:bold;}
 
 button{
   width:100%;
   border:none;
   background:red;
   color:white;
-  padding:12px;
-  border-radius:12px;
+  padding:10px;
   cursor:pointer;
 }
 
-/* سبد خرید */
+/* سبد */
 #cartBox{
   position:fixed;
   top:0;
   left:-420px;
-  width:400px;
+  width:380px;
   height:100%;
   background:white;
-  box-shadow:0 0 20px rgba(0,0,0,0.2);
   transition:0.4s;
-  z-index:999;
-  padding:20px;
+  padding:15px;
   overflow:auto;
 }
 
-#cartBox.active{
-  left:0;
-}
-
-/* هدر سبد */
-.cartHeader{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  margin-bottom:15px;
-}
-
-.closeBtn{
-  width:40px;
-  height:40px;
-  border-radius:50%;
-  border:none;
-  background:black;
-  color:white;
-  font-size:20px;
-  cursor:pointer;
-}
+#cartBox.active{left:0;}
 
 .cartItem{
   display:flex;
-  gap:15px;
-  margin:15px 0;
-  border-bottom:1px solid #ddd;
-  padding-bottom:15px;
+  gap:10px;
+  margin:10px 0;
 }
 
 .cartItem img{
-  width:90px;
-  height:90px;
-  border-radius:10px;
+  width:70px;
+  height:70px;
 }
 
-input{
-  width:100%;
-  padding:12px;
-  margin:8px 0;
-  border:1px solid #ccc;
-  border-radius:10px;
+/* پشتیبانی */
+#supportBox{
+  position:fixed;
+  bottom:-420px;
+  right:20px;
+  width:280px;
+  background:white;
+  padding:15px;
+  border-radius:15px;
+  transition:0.3s;
+  box-shadow:0 0 10px rgba(0,0,0,0.2);
 }
 
-#totalPrice{
-  margin:15px 0;
-  color:red;
+#supportBox.active{
+  bottom:20px;
+}
+
+.floatingSupport{
+  position:fixed;
+  bottom:20px;
+  right:20px;
+  background:black;
+  color:white;
+  padding:10px;
+  border-radius:10px;
+  cursor:pointer;
 }
 </style>
 </head>
@@ -158,8 +135,14 @@ input{
 <div class="topbar">
   <div class="logo">مزون ایلا</div>
 
-  <div class="cartBtn" onclick="openCart()">
-    🛒 سبد خرید: <span id="cartCount">0</span>
+  <div style="display:flex;gap:10px;">
+    <div class="cartBtn" onclick="openCart()">
+      🛒 <span id="cartCount">0</span>
+    </div>
+
+    <div class="cartBtn" onclick="openSupport()">
+      💬 پشتیبانی
+    </div>
   </div>
 </div>
 
@@ -167,24 +150,32 @@ input{
 
 <!-- سبد خرید -->
 <div id="cartBox">
-
-  <div class="cartHeader">
-    <h2>سبد خرید 🛒</h2>
-
-    <!-- دکمه ضربدر -->
-    <button class="closeBtn" onclick="closeCart()">✕</button>
-  </div>
+  <h2>سبد خرید</h2>
+  <button onclick="closeCart()">بستن ✕</button>
 
   <div id="cartItems"></div>
-
-  <h3 id="totalPrice">مجموع: 0 تومان</h3>
+  <h3 id="totalPrice"></h3>
 
   <input id="custName" placeholder="نام">
   <input id="custPhone" placeholder="شماره">
   <input id="custAddress" placeholder="آدرس">
 
   <button onclick="checkout()">ثبت سفارش</button>
+</div>
 
+<!-- پشتیبانی -->
+<div id="supportBox">
+  <h3>پشتیبانی 💬</h3>
+
+  <input id="supName" placeholder="نام">
+  <textarea id="supMsg" placeholder="پیام"></textarea>
+
+  <button onclick="sendSupport()">ارسال</button>
+  <button onclick="closeSupport()" style="background:black;">بستن</button>
+</div>
+
+<div class="floatingSupport" onclick="openSupport()">
+  💬
 </div>
 
 <script>
@@ -197,63 +188,61 @@ updateCart();
 /* محصولات */
 async function loadProducts(){
   const res = await fetch("/products");
-  const products = await res.json();
+  const data = await res.json();
 
   const box = document.getElementById("products");
   box.innerHTML = "";
 
-  products.forEach(product => {
+  data.forEach(p=>{
     box.innerHTML += `
       <div class="card">
-        <img src="${product.image}">
+        <img src="${p.image}">
         <div class="info">
-          <h3>${product.name}</h3>
-          <p class="price">${product.price} تومان</p>
-          <button onclick='addToCart(${JSON.stringify(product)})'>
-            افزودن
-          </button>
+          <h3>${p.name}</h3>
+          <p class="price">${p.price}</p>
+          <button onclick='addToCart(${JSON.stringify(p)})'>افزودن</button>
         </div>
       </div>
     `;
   });
 }
 
-function addToCart(product){
-  cart.push(product);
-  localStorage.setItem("cart", JSON.stringify(cart));
+function addToCart(p){
+  cart.push(p);
+  localStorage.setItem("cart",JSON.stringify(cart));
   updateCart();
 }
 
 function updateCart(){
   document.getElementById("cartCount").innerText = cart.length;
 
-  const cartItems = document.getElementById("cartItems");
-  cartItems.innerHTML = "";
+  let box = document.getElementById("cartItems");
+  box.innerHTML = "";
 
   let total = 0;
 
-  cart.forEach((item, index) => {
-    total += Number(item.price);
+  cart.forEach((i,idx)=>{
+    total += Number(i.price);
 
-    cartItems.innerHTML += `
+    box.innerHTML += `
       <div class="cartItem">
-        <img src="${item.image}">
+        <img src="${i.image}">
         <div>
-          <h3>${item.name}</h3>
-          <p>${item.price}</p>
-          <button onclick="removeItem(${index})">حذف</button>
+          <p>${i.name}</p>
+          <p>${i.price}</p>
+          <button onclick="removeItem(${idx})">حذف</button>
         </div>
       </div>
     `;
   });
 
   document.getElementById("totalPrice").innerText =
-  "مجموع: " + total + " تومان";
+  "مجموع: " + total;
 }
 
-function removeItem(index){
-  cart.splice(index,1);
-  localStorage.setItem("cart", JSON.stringify(cart));
+function removeItem(i){
+  cart.splice(i,1);
+  localStorage.setItem("cart",JSON.stringify(cart));
   updateCart();
 }
 
@@ -261,98 +250,61 @@ function openCart(){
   document.getElementById("cartBox").classList.add("active");
 }
 
-/* دکمه بستن */
 function closeCart(){
   document.getElementById("cartBox").classList.remove("active");
 }
 
 async function checkout(){
-  if(cart.length === 0){
-    alert("سبد خالیه");
-    return;
-  }
-
-  const name = document.getElementById("custName").value;
-  const phone = document.getElementById("custPhone").value;
-  const address = document.getElementById("custAddress").value;
-
-  await fetch("/create-order", {
+  await fetch("/create-order",{
     method:"POST",
-    headers:{ "Content-Type":"application/json" },
-    body: JSON.stringify({
-      items: cart,
-      total: cart.reduce((a,b)=>a+Number(b.price),0),
-      customer:{ name, phone, address }
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({
+      items:cart,
+      total:cart.reduce((a,b)=>a+Number(b.price),0),
+      customer:{
+        name:custName.value,
+        phone:custPhone.value,
+        address:custAddress.value
+      }
     })
   });
 
-  alert("ثبت شد");
-  cart = [];
+  alert("ثبت شد ✅");
+  cart=[];
   localStorage.removeItem("cart");
   updateCart();
 }
 
-</script>
-<div id="supportBox" style="
-position:fixed;
-bottom:-400px;
-right:20px;
-width:300px;
-background:white;
-padding:15px;
-border-radius:15px;
-box-shadow:0 0 10px rgba(0,0,0,0.2);
-transition:0.3s;
-">
-
-<h3>پشتیبانی 💬</h3>
-
-<input id="supName" placeholder="نام" style="width:100%;padding:10px;margin:5px 0;">
-<textarea id="supMsg" placeholder="پیام" style="width:100%;height:80px;"></textarea>
-
-<button onclick="sendSupport()" style="width:100%;background:red;color:white;padding:10px;margin-top:10px;">
-ارسال
-</button>
-
-<button onclick="closeSupport()" style="width:100%;background:black;color:white;padding:10px;margin-top:5px;">
-بستن
-</button>
-
-</div>
-  <script>
-
+/* پشتیبانی */
 function openSupport(){
-  document.getElementById("supportBox").style.bottom = "20px";
+  document.getElementById("supportBox").classList.add("active");
 }
 
 function closeSupport(){
-  document.getElementById("supportBox").style.bottom = "-400px";
+  document.getElementById("supportBox").classList.remove("active");
 }
 
 async function sendSupport(){
 
-  const name = document.getElementById("supName").value;
-  const msg = document.getElementById("supMsg").value;
+  const name = supName.value;
+  const msg = supMsg.value;
 
   if(!name || !msg){
     alert("پر کن ❌");
     return;
   }
 
-  await fetch("/support", {
+  await fetch("/support",{
     method:"POST",
-    headers:{ "Content-Type":"application/json" },
-    body: JSON.stringify({ name, msg })
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({name,msg})
   });
 
   alert("ارسال شد ✅");
-
-  document.getElementById("supMsg").value = "";
+  supMsg.value="";
 }
 
 </script>
+
 </body>
 </html>
-<button onclick="openSupport()" style="margin-right:10px;background:black;color:white;padding:10px;border-radius:10px;">
-پشتیبانی 💬
-</button>
