@@ -13,19 +13,24 @@ const DATA_FILE = "./data.json";
 let products = [];
 let orders = [];
 
+/* 🔥 SAFE LOAD */
 function loadData(){
-  if(fs.existsSync(DATA_FILE)){
-    try {
-      const data = JSON.parse(fs.readFileSync(DATA_FILE));
+  try {
+    if(fs.existsSync(DATA_FILE)){
+      const raw = fs.readFileSync(DATA_FILE, "utf-8");
+      const data = JSON.parse(raw || "{}");
+
       products = data.products || [];
       orders = data.orders || [];
-    } catch (err) {
-      products = [];
-      orders = [];
     }
+  } catch (err) {
+    console.log("Data file error fixed automatically");
+    products = [];
+    orders = [];
   }
 }
 
+/* SAVE */
 function saveData(){
   const data = { products, orders };
   fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
@@ -33,15 +38,19 @@ function saveData(){
 
 loadData();
 
-/* آپلود */
+/* upload folder safe */
 const storage = multer.diskStorage({
-  destination: (req, file, cb) => cb(null, "public/uploads"),
-  filename: (req, file, cb) => cb(null, Date.now() + path.extname(file.originalname))
+  destination: (req, file, cb) => {
+    cb(null, "public/uploads");
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname));
+  }
 });
 
 const upload = multer({ storage });
 
-/* محصولات */
+/* PRODUCTS */
 app.post("/add-product", upload.single("image"), (req, res) => {
   if (!req.file) return res.json({ error: "no image" });
 
@@ -69,7 +78,7 @@ app.delete("/delete-product/:id", (req, res) => {
   res.json({ success: true });
 });
 
-/* سفارش */
+/* ORDERS */
 app.post("/create-order", (req, res) => {
   const order = {
     id: Date.now(),
@@ -96,6 +105,7 @@ app.delete("/delete-order/:id", (req, res) => {
   res.json({ success: true });
 });
 
+/* PORT FIX */
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
