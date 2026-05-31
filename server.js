@@ -5,15 +5,9 @@ const fs = require("fs");
 
 const app = express();
 
-/* =========================
-   تنظیمات پایه
-========================= */
 app.use(express.static("public"));
 app.use(express.json());
 
-/* =========================
-   فایل دیتابیس
-========================= */
 const DATA_FILE = "./data.json";
 
 let products = [];
@@ -32,19 +26,17 @@ function initFile() {
 }
 
 /* =========================
-   لود دیتا (SAFE)
+   لود دیتا
 ========================= */
 function loadData() {
   try {
     initFile();
-
     const raw = fs.readFileSync(DATA_FILE, "utf-8");
     const data = JSON.parse(raw);
 
     products = data.products || [];
     orders = data.orders || [];
   } catch (err) {
-    console.log("⚠️ Error loading data, reset applied");
     products = [];
     orders = [];
   }
@@ -54,11 +46,7 @@ function loadData() {
    ذخیره دیتا
 ========================= */
 function saveData() {
-  const data = {
-    products,
-    orders,
-  };
-
+  const data = { products, orders };
   fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
 }
 
@@ -70,25 +58,36 @@ loadData();
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const dir = "public/uploads";
-    if (!fs.existsSync(dir)) {
-      fs.mkdirSync(dir, { recursive: true });
-    }
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
     cb(null, dir);
   },
   filename: (req, file, cb) => {
     cb(null, Date.now() + path.extname(file.originalname));
-  },
+  }
 });
 
 const upload = multer({ storage });
 
 /* =========================
-   ➕ افزودن محصول
+   صفحه‌ها
+========================= */
+app.get("/", (req, res) => {
+  res.sendFile(__dirname + "/index.html");
+});
+
+app.get("/admin.html", (req, res) => {
+  res.sendFile(__dirname + "/admin.html");
+});
+
+app.get("/login.html", (req, res) => {
+  res.sendFile(__dirname + "/login.html");
+});
+
+/* =========================
+   محصولات
 ========================= */
 app.post("/add-product", upload.single("image"), (req, res) => {
-  if (!req.file) {
-    return res.json({ error: "عکس ارسال نشده" });
-  }
+  if (!req.file) return res.json({ error: "عکس نیست" });
 
   const product = {
     id: Date.now(),
@@ -103,27 +102,19 @@ app.post("/add-product", upload.single("image"), (req, res) => {
   res.json({ success: true });
 });
 
-/* =========================
-   📦 گرفتن محصولات
-========================= */
 app.get("/products", (req, res) => {
   res.json(products);
 });
 
-/* =========================
-   ❌ حذف محصول
-========================= */
 app.delete("/delete-product/:id", (req, res) => {
   const id = Number(req.params.id);
-
-  products = products.filter((p) => p.id !== id);
+  products = products.filter(p => p.id !== id);
   saveData();
-
   res.json({ success: true });
 });
 
 /* =========================
-   🧾 ثبت سفارش
+   سفارش‌ها
 ========================= */
 app.post("/create-order", (req, res) => {
   const order = {
@@ -131,7 +122,6 @@ app.post("/create-order", (req, res) => {
     items: req.body.items,
     total: req.body.total,
     customer: req.body.customer,
-    status: "در انتظار بررسی",
   };
 
   orders.push(order);
@@ -140,44 +130,22 @@ app.post("/create-order", (req, res) => {
   res.json({ success: true });
 });
 
-/* =========================
-   📦 گرفتن سفارش‌ها
-========================= */
 app.get("/orders", (req, res) => {
   res.json(orders);
 });
 
-/* =========================
-   ❌ حذف سفارش
-========================= */
 app.delete("/delete-order/:id", (req, res) => {
   const id = Number(req.params.id);
-
-  orders = orders.filter((o) => o.id !== id);
+  orders = orders.filter(o => o.id !== id);
   saveData();
-
   res.json({ success: true });
 });
 
 /* =========================
-   🚀 اجرا روی Render
+   اجرا
 ========================= */
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-   app.get("/", (req, res) => {
-  res.sendFile(__dirname + "/index.html");
-});
-   app.get("/admin.html", (req, res) => {
-  res.sendFile(__dirname + "/admin.html");
-});
-
-app.get("/login.html", (req, res) => {
-  res.sendFile(__dirname + "/login.html");
-});
-
-app.get("/", (req, res) => {
-  res.sendFile(__dirname + "/index.html");
-});
   console.log("🚀 Server running on port " + PORT);
 });
