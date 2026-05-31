@@ -9,7 +9,7 @@ app.use(express.static("public"));
 app.use(express.json());
 
 /* =========================
-   دیتابیس فایل
+   دیتابیس
 ========================= */
 const DATA_FILE = "./data.json";
 
@@ -18,17 +18,13 @@ let orders = [];
 let supports = [];
 
 /* =========================
-   ساخت فایل اگر نبود
+   ساخت فایل اولیه
 ========================= */
 function initFile() {
   if (!fs.existsSync(DATA_FILE)) {
     fs.writeFileSync(
       DATA_FILE,
-      JSON.stringify(
-        { products: [], orders: [], supports: [] },
-        null,
-        2
-      )
+      JSON.stringify({ products: [], orders: [], supports: [] }, null, 2)
     );
   }
 }
@@ -46,7 +42,7 @@ function loadData() {
     orders = data.orders || [];
     supports = data.supports || [];
   } catch (err) {
-    console.log("DB reset");
+    console.log("⚠️ DB reset");
     products = [];
     orders = [];
     supports = [];
@@ -59,27 +55,26 @@ function loadData() {
 function saveData() {
   fs.writeFileSync(
     DATA_FILE,
-    JSON.stringify(
-      { products, orders, supports },
-      null,
-      2
-    )
+    JSON.stringify({ products, orders, supports }, null, 2)
   );
 }
 
 loadData();
 
 /* =========================
-   آپلود عکس
+   آپلود فایل
 ========================= */
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const dir = "public/uploads";
+
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
     }
+
     cb(null, dir);
   },
+
   filename: (req, file, cb) => {
     cb(null, Date.now() + path.extname(file.originalname));
   },
@@ -88,7 +83,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 /* =========================
-   📦 محصولات
+   محصولات
 ========================= */
 app.post("/add-product", upload.single("image"), (req, res) => {
   if (!req.file) {
@@ -97,8 +92,8 @@ app.post("/add-product", upload.single("image"), (req, res) => {
 
   const product = {
     id: Date.now(),
-    name: req.body.name,
-    price: req.body.price,
+    name: req.body.name || "",
+    price: req.body.price || 0,
     image: "/uploads/" + req.file.filename,
   };
 
@@ -120,14 +115,14 @@ app.delete("/delete-product/:id", (req, res) => {
 });
 
 /* =========================
-   🧾 سفارش‌ها
+   سفارش‌ها
 ========================= */
 app.post("/create-order", (req, res) => {
   const order = {
     id: Date.now(),
-    items: req.body.items,
-    total: req.body.total,
-    customer: req.body.customer,
+    items: req.body.items || [],
+    total: req.body.total || 0,
+    customer: req.body.customer || {},
   };
 
   orders.push(order);
@@ -148,13 +143,13 @@ app.delete("/delete-order/:id", (req, res) => {
 });
 
 /* =========================
-   💬 پشتیبانی
+   پشتیبانی
 ========================= */
 app.post("/support", (req, res) => {
   const msg = {
     id: Date.now(),
-    name: req.body.name,
-    msg: req.body.msg,
+    name: req.body.name || "ناشناس",
+    msg: req.body.msg || "",
   };
 
   supports.push(msg);
@@ -168,7 +163,7 @@ app.get("/support", (req, res) => {
 });
 
 /* =========================
-   🌐 صفحات اصلی
+   صفحات
 ========================= */
 app.get("/", (req, res) => {
   res.sendFile(__dirname + "/index.html");
@@ -183,7 +178,7 @@ app.get("/login.html", (req, res) => {
 });
 
 /* =========================
-   🚀 اجرا
+   اجرا
 ========================= */
 const PORT = process.env.PORT || 3000;
 
