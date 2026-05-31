@@ -12,49 +12,45 @@ const DATA_FILE = "./data.json";
 
 let products = [];
 let orders = [];
+let supports = []; // ⭐ پیام‌های پشتیبانی
 
-/* =========================
-   ساخت فایل اگر نبود
-========================= */
+// ساخت فایل
 function initFile() {
   if (!fs.existsSync(DATA_FILE)) {
     fs.writeFileSync(
       DATA_FILE,
-      JSON.stringify({ products: [], orders: [] }, null, 2)
+      JSON.stringify({ products: [], orders: [], supports: [] }, null, 2)
     );
   }
 }
 
-/* =========================
-   لود دیتا
-========================= */
+// لود دیتا
 function loadData() {
   try {
     initFile();
-    const raw = fs.readFileSync(DATA_FILE, "utf-8");
-    const data = JSON.parse(raw);
+    const data = JSON.parse(fs.readFileSync(DATA_FILE, "utf-8"));
 
     products = data.products || [];
     orders = data.orders || [];
-  } catch (err) {
+    supports = data.supports || [];
+  } catch (e) {
     products = [];
     orders = [];
+    supports = [];
   }
 }
 
-/* =========================
-   ذخیره دیتا
-========================= */
+// ذخیره دیتا
 function saveData() {
-  const data = { products, orders };
-  fs.writeFileSync(DATA_FILE, JSON.stringify(data, null, 2));
+  fs.writeFileSync(
+    DATA_FILE,
+    JSON.stringify({ products, orders, supports }, null, 2)
+  );
 }
 
 loadData();
 
-/* =========================
-   آپلود عکس
-========================= */
+// آپلود عکس
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const dir = "public/uploads";
@@ -63,32 +59,15 @@ const storage = multer.diskStorage({
   },
   filename: (req, file, cb) => {
     cb(null, Date.now() + path.extname(file.originalname));
-  }
+  },
 });
 
 const upload = multer({ storage });
 
 /* =========================
-   صفحه‌ها
-========================= */
-app.get("/", (req, res) => {
-  res.sendFile(__dirname + "/index.html");
-});
-
-app.get("/admin.html", (req, res) => {
-  res.sendFile(__dirname + "/admin.html");
-});
-
-app.get("/login.html", (req, res) => {
-  res.sendFile(__dirname + "/login.html");
-});
-
-/* =========================
    محصولات
 ========================= */
 app.post("/add-product", upload.single("image"), (req, res) => {
-  if (!req.file) return res.json({ error: "عکس نیست" });
-
   const product = {
     id: Date.now(),
     name: req.body.name,
@@ -104,13 +83,6 @@ app.post("/add-product", upload.single("image"), (req, res) => {
 
 app.get("/products", (req, res) => {
   res.json(products);
-});
-
-app.delete("/delete-product/:id", (req, res) => {
-  const id = Number(req.params.id);
-  products = products.filter(p => p.id !== id);
-  saveData();
-  res.json({ success: true });
 });
 
 /* =========================
@@ -134,11 +106,24 @@ app.get("/orders", (req, res) => {
   res.json(orders);
 });
 
-app.delete("/delete-order/:id", (req, res) => {
-  const id = Number(req.params.id);
-  orders = orders.filter(o => o.id !== id);
+/* =========================
+   ⭐ پشتیبانی
+========================= */
+app.post("/support", (req, res) => {
+  const msg = {
+    id: Date.now(),
+    name: req.body.name,
+    msg: req.body.msg,
+  };
+
+  supports.push(msg);
   saveData();
+
   res.json({ success: true });
+});
+
+app.get("/support", (req, res) => {
+  res.json(supports);
 });
 
 /* =========================
@@ -147,11 +132,5 @@ app.delete("/delete-order/:id", (req, res) => {
 const PORT = process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-  console.log("🚀 Server running on port " + PORT);
-});
-let supports = [];
-
-app.post("/support", (req,res)=>{
-  supports.push(req.body);
-  res.json({success:true});
+  console.log("Server running on " + PORT);
 });
