@@ -96,6 +96,13 @@ img{
   background:#c4002f;
 }
 
+.orderItems{
+  background:#222;
+  padding:10px;
+  border-radius:10px;
+  margin-top:10px;
+}
+
 </style>
 
 </head>
@@ -362,6 +369,18 @@ async function loadOrders(){
 
   orders.forEach(o => {
 
+    let itemsHTML = "";
+
+    o.items.forEach(i => {
+
+      itemsHTML += `
+        <div>
+          ${i.name} - ${i.price} تومان
+        </div>
+      `;
+
+    });
+
     box.innerHTML += `
       <div class="card">
 
@@ -375,9 +394,9 @@ async function loadOrders(){
 
         <p>📍 ${o.customer?.address || "-"}</p>
 
-        <button onclick="showItems('${o.id}')">
-          مشاهده محصولات
-        </button>
+        <div class="orderItems">
+          ${itemsHTML}
+        </div>
 
         <button class="deleteBtn"
         onclick="deleteOrder('${o.id}')">
@@ -386,35 +405,6 @@ async function loadOrders(){
 
       </div>
     `;
-
-  });
-
-}
-
-function showItems(id){
-
-  fetch("/orders")
-  .then(res => res.json())
-  .then(orders => {
-
-    const order =
-      orders.find(o => o.id === id);
-
-    if(!order) return;
-
-    let text = "";
-
-    order.items.forEach(i => {
-
-      text += `
-${i.name}
-${i.price} تومان
-
-`;
-
-    });
-
-    alert(text);
 
   });
 
@@ -467,6 +457,11 @@ async function loadSupport(){
             ارسال پاسخ
           </button>
 
+          <button class="deleteBtn"
+          onclick="deleteSupport('${m.id}')">
+            حذف پیام
+          </button>
+
         </div>
 
       </div>
@@ -496,6 +491,16 @@ async function sendReply(id){
   });
 
   alert("پاسخ ارسال شد ✅");
+
+  loadSupport();
+
+}
+
+async function deleteSupport(id){
+
+  await fetch("/support/" + id, {
+    method:"DELETE"
+  });
 
   loadSupport();
 
