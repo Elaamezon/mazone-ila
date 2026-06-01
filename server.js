@@ -1,7 +1,11 @@
 const express = require("express");
 const path = require("path");
+const http = require("http");
+const { Server } = require("socket.io");
 
 const app = express();
+const server = http.createServer(app);
+const io = new Server(server);
 
 /* =========================
    Middleware
@@ -11,33 +15,27 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json());
 
 /* =========================
-   دیتابیس موقت (RAM)
+   دیتابیس ساده
 ========================= */
 
 let products = [];
 let orders = [];
 let supports = [];
+let messages = []; // برای چت واتساپی
 
 /* =========================
    محصولات
 ========================= */
 
 app.post("/add-product", (req, res) => {
-  const { name, price, image } = req.body;
-
-  if (!name || !price) {
-    return res.json({ success: false, message: "اطلاعات ناقص" });
-  }
-
   const product = {
     id: Date.now().toString(),
-    name,
-    price: Number(price),
-    image: image || "https://via.placeholder.com/300"
+    name: req.body.name,
+    price: Number(req.body.price),
+    image: req.body.image || "https://via.placeholder.com/300"
   };
 
   products.push(product);
-
   res.json({ success: true, product });
 });
 
@@ -57,14 +55,13 @@ app.delete("/delete-product/:id", (req, res) => {
 app.post("/create-order", (req, res) => {
   const order = {
     id: Date.now().toString(),
-    items: req.body.items || [],
-    total: req.body.total || 0,
-    customer: req.body.customer || {},
+    items: req.body.items,
+    total: req.body.total,
+    customer: req.body.customer,
     createdAt: new Date()
   };
 
   orders.push(order);
-
   res.json({ success: true, order });
 });
 
@@ -78,27 +75,21 @@ app.delete("/delete-order/:id", (req, res) => {
 });
 
 /* =========================
-   پشتیبانی دوطرفه
+   پشتیبانی (غیر چت)
 ========================= */
 
 app.post("/support", (req, res) => {
-  const { name, msg } = req.body;
-
-  if (!name || !msg) {
-    return res.json({ success: false });
-  }
-
-  const support = {
+  const msg = {
     id: Date.now().toString(),
-    name,
-    msg,
-    reply: "",
-    createdAt: new Date()
+    name: req.body.name,
+    msg: req.body.msg,
+    reply: ""
   };
 
-  supports.push(support);
+  supports.push(msg);
+  io.emit("support_update", supports);
 
-  res.json({ success: true, support });
+  res.json({ success: true });
 });
 
 app.get("/support", (req, res) => {
@@ -106,39 +97,53 @@ app.get("/support", (req, res) => {
 });
 
 app.post("/support/reply/:id", (req, res) => {
-  const support = supports.find(s => s.id === req.params.id);
+  const msg = supports.find(m => m.id === req.params.id);
+  if (msg) msg.reply = req.body.reply;
 
-  if (!support) {
-    return res.json({ success: false });
-  }
-
-  support.reply = req.body.reply;
+  io.emit("support_update", supports);
 
   res.json({ success: true });
 });
 
 app.delete("/support/:id", (req, res) => {
-  supports = supports.filter(s => s.id !== req.params.id);
+  supports = supports.filter(m => m.id !== req.params.id);
+  io.emit("support_update", supports);
   res.json({ success: true });
 });
 
 /* =========================
-   تست سرور
+   💬 چت واتساپی واقعی (Socket.io)
 ========================= */
 
-app.get("/api", (req, res) => {
-  res.json({
-    success: true,
-    message: "Server is working 🚀"
+io.on("connection", (socket) => {
+  console.log("User connected:", socket.id);
+
+  socket.emit("chat_history", messages);
+
+  socket.on("send_message", (data) => {
+    const msg = {
+      id: Date.now().toString(),
+      text: data.text,
+      sender: data.sender,
+      time: new Date()
+    };
+
+    messages.push(msg);
+
+    io.emit("new_message", msg);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("User disconnected");
   });
 });
 
 /* =========================
-   اجرا
+   Start Server
 ========================= */
 
 const PORT = process.env.PORT || 10000;
 
-app.listen(PORT, () => {
-  console.log("🚀 Server running on port " + PORT);
+server.listen(PORT, () => {
+  console.log("🚀 Server running on " + PORT);
 });
