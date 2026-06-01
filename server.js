@@ -147,3 +147,56 @@ const PORT = process.env.PORT || 10000;
 server.listen(PORT, () => {
   console.log("🚀 Server running on " + PORT);
 });
+const express = require("express");
+const path = require("path");
+const http = require("http");
+const { Server } = require("socket.io");
+
+const app = express();
+const server = http.createServer(app);
+const io = new Server(server);
+
+app.use(express.static(path.join(__dirname, "public")));
+app.use(express.json());
+
+/* پیام‌ها */
+let messages = [];
+
+/* =========================
+   Socket Chat WhatsApp Style
+========================= */
+
+io.on("connection", (socket) => {
+  console.log("User connected:", socket.id);
+
+  // ارسال تاریخچه چت
+  socket.emit("chat_history", messages);
+
+  // دریافت پیام جدید
+  socket.on("send_message", (data) => {
+    const msg = {
+      id: Date.now().toString(),
+      text: data.text,
+      sender: data.sender, // user or admin
+      time: new Date().toLocaleTimeString()
+    };
+
+    messages.push(msg);
+
+    io.emit("new_message", msg);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("User disconnected");
+  });
+});
+
+/* =========================
+   Start
+========================= */
+
+const PORT = process.env.PORT || 10000;
+
+server.listen(PORT, () => {
+  console.log("🚀 Server running on " + PORT);
+});
