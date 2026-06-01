@@ -2,50 +2,52 @@ const express = require("express");
 const path = require("path");
 const http = require("http");
 const { Server } = require("socket.io");
+const multer = require("multer");
 
 const app = express();
 const server = http.createServer(app);
-
-/* =========================
-   Socket.io (Chat WhatsApp)
-========================= */
-const io = new Server(server, {
-  cors: {
-    origin: "*"
-  }
-});
+const io = new Server(server);
 
 /* =========================
    Middleware
 ========================= */
+
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json());
 
 /* =========================
-   Database (Simple Memory)
+   Upload setup
+========================= */
+
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "public/uploads");
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + "-" + file.originalname);
+  }
+});
+
+const upload = multer({ storage });
+
+/* =========================
+   دیتابیس ساده
 ========================= */
 
 let products = [];
 let orders = [];
 let supports = [];
-let messages = []; // chat
 
 /* =========================
-   🛒 Products
+   محصولات (UPLOAD)
 ========================= */
 
-app.post("/add-product", (req, res) => {
-  const { name, price, image } = req.body;
-
-  if (!name || !price) {
-    return res.json({ success: false, message: "Invalid data" });
-  }
-
+app.post("/add-product", upload.single("image"), (req, res) => {
   const product = {
     id: Date.now().toString(),
-    name,
-    price: Number(price),
-    image: image || "https://via.placeholder.com/300"
+    name: req.body.name,
+    price: Number(req.body.price),
+    image: req.file ? "/uploads/" + req.file.filename : ""
   };
 
   products.push(product);
@@ -63,20 +65,19 @@ app.delete("/delete-product/:id", (req, res) => {
 });
 
 /* =========================
-   🧾 Orders
+   سفارش‌ها
 ========================= */
 
 app.post("/create-order", (req, res) => {
   const order = {
     id: Date.now().toString(),
     items: req.body.items || [],
-    total: req.body.total || 0,
+    total: Number(req.body.total || 0),
     customer: req.body.customer || {},
     createdAt: new Date()
   };
 
   orders.push(order);
-
   res.json({ success: true, order });
 });
 
@@ -90,7 +91,7 @@ app.delete("/delete-order/:id", (req, res) => {
 });
 
 /* =========================
-   💬 Support (Ticket style)
+   پشتیبانی
 ========================= */
 
 app.post("/support", (req, res) => {
@@ -98,12 +99,10 @@ app.post("/support", (req, res) => {
     id: Date.now().toString(),
     name: req.body.name,
     msg: req.body.msg,
-    reply: "",
-    createdAt: new Date()
+    reply: ""
   };
 
   supports.push(msg);
-
   io.emit("support_update", supports);
 
   res.json({ success: true });
@@ -115,10 +114,7 @@ app.get("/support", (req, res) => {
 
 app.post("/support/reply/:id", (req, res) => {
   const msg = supports.find(m => m.id === req.params.id);
-
-  if (msg) {
-    msg.reply = req.body.reply;
-  }
+  if (msg) msg.reply = req.body.reply;
 
   io.emit("support_update", supports);
 
@@ -127,49 +123,30 @@ app.post("/support/reply/:id", (req, res) => {
 
 app.delete("/support/:id", (req, res) => {
   supports = supports.filter(m => m.id !== req.params.id);
-
   io.emit("support_update", supports);
 
   res.json({ success: true });
 });
 
 /* =========================
-   💬 WhatsApp Chat (Socket.io)
+   Socket Chat (اختیاری)
 ========================= */
 
-io.on("connection", (socket) => {
-  console.log("User connected:", socket.id);
+let messages = [];
 
-  // send history
+io.on("connection", (socket) => {
   socket.emit("chat_history", messages);
 
-  // new message
   socket.on("send_message", (data) => {
     const msg = {
       id: Date.now().toString(),
       text: data.text,
-      sender: data.sender, // user / admin
+      sender: data.sender,
       time: new Date().toLocaleTimeString()
     };
 
     messages.push(msg);
-
     io.emit("new_message", msg);
-  });
-
-  socket.on("disconnect", () => {
-    console.log("User disconnected");
-  });
-});
-
-/* =========================
-   Home test
-========================= */
-
-app.get("/api", (req, res) => {
-  res.json({
-    success: true,
-    message: "Server is running 🚀"
   });
 });
 
@@ -180,5 +157,6 @@ app.get("/api", (req, res) => {
 const PORT = process.env.PORT || 10000;
 
 server.listen(PORT, () => {
-  console.log("🚀 Server running on port " + PORT);
+  console.log("🚀 Server running on " + PORT);
 });
+
