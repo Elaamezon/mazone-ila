@@ -1,106 +1,110 @@
-const express = require("express");
-const path = require("path");
+body{
+  margin:0;
+  font-family:tahoma;
+  background:#f5f6fa;
+}
 
-const app = express();
+/* هدر */
+.topbar{
+  background:white;
+  padding:15px 20px;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  box-shadow:0 2px 10px rgba(0,0,0,0.05);
+  position:sticky;
+  top:0;
+}
 
-app.use(express.static(path.join(__dirname, "public")));
-app.use(express.json());
+/* محصولات */
+#products{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(230px,1fr));
+  gap:20px;
+  padding:20px;
+}
 
-/* =========================
-   دیتابیس ساده (حرفه‌ای‌تر)
-========================= */
+/* کارت محصول */
+.card{
+  background:white;
+  border-radius:20px;
+  overflow:hidden;
+  box-shadow:0 5px 15px rgba(0,0,0,0.08);
+  transition:0.3s;
+}
 
-let products = [];
-let orders = [];
-let supports = [];
+.card:hover{
+  transform:translateY(-5px);
+}
 
-/* =========================
-   محصولات
-========================= */
+.card img{
+  width:100%;
+  height:240px;
+  object-fit:cover;
+}
 
-app.post("/add-product", (req, res) => {
-  const product = {
-    id: Date.now().toString(),
-    name: req.body.name,
-    price: Number(req.body.price),
-    image: req.body.image || "https://via.placeholder.com/300"
-  };
+.info{
+  padding:15px;
+}
 
-  products.push(product);
+.price{
+  color:#e74c3c;
+  font-weight:bold;
+  font-size:18px;
+}
 
-  res.json({ success: true });
-});
+/* دکمه */
+button{
+  background:linear-gradient(135deg,#ff4d4d,#e60000);
+  color:white;
+  border:none;
+  padding:12px;
+  width:100%;
+  cursor:pointer;
+  border-radius:12px;
+  font-weight:bold;
+  transition:0.3s;
+}
 
-app.get("/products", (req, res) => {
-  res.json(products);
-});
+button:hover{
+  opacity:0.85;
+}
 
-app.delete("/delete-product/:id", (req, res) => {
-  products = products.filter(p => p.id !== req.params.id);
-  res.json({ success: true });
-});
+/* سبد خرید */
+#cartBox{
+  position:fixed;
+  top:0;
+  right:-400px;
+  width:350px;
+  height:100%;
+  background:#111;
+  color:white;
+  padding:20px;
+  transition:0.4s;
+  overflow:auto;
+}
 
-/* =========================
-   سفارش‌ها (سبد خرید واقعی)
-========================= */
+#cartBox.active{
+  right:0;
+}
 
-app.post("/create-order", (req, res) => {
-  const order = {
-    id: Date.now().toString(),
-    items: req.body.items,
-    total: req.body.total,
-    customer: req.body.customer,
-    status: "pending"
-  };
+.cartItem{
+  display:flex;
+  gap:10px;
+  padding:10px 0;
+  border-bottom:1px solid #333;
+}
 
-  orders.push(order);
+.cartItem img{
+  width:60px;
+  height:60px;
+  border-radius:10px;
+}
 
-  res.json({ success: true });
-});
-
-app.get("/orders", (req, res) => {
-  res.json(orders);
-});
-
-/* =========================
-   پشتیبانی دوطرفه واقعی
-========================= */
-
-app.post("/support", (req, res) => {
-  const msg = {
-    id: Date.now().toString(),
-    name: req.body.name,
-    msg: req.body.msg,
-    reply: "",
-    createdAt: new Date()
-  };
-
-  supports.push(msg);
-
-  res.json({ success: true });
-});
-
-app.get("/support", (req, res) => {
-  res.json(supports);
-});
-
-/* پاسخ ادمین */
-app.post("/support/reply/:id", (req, res) => {
-  const msg = supports.find(s => s.id === req.params.id);
-
-  if (msg) {
-    msg.reply = req.body.reply;
-  }
-
-  res.json({ success: true });
-});
-
-/* =========================
-   Start
-========================= */
-
-const PORT = process.env.PORT || 10000;
-
-app.listen(PORT, () => {
-  console.log("🚀 Server running on " + PORT);
-});
+input{
+  width:100%;
+  padding:10px;
+  margin:5px 0;
+  border-radius:10px;
+  border:none;
+}
