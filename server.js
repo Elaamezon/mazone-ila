@@ -14,14 +14,14 @@ app.use(express.json());
 ========================= */
 
 mongoose.connect(
-  "mongodb+srv://admin:123456Aa@cluster0.abcd1.mongodb.net/shop"
+  "mongodb+srv://admin:123456Aa@cluster0.abcd1.mongodb.net/shop",
+  {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
+  }
 )
-.then(() => {
-  console.log("✅ MongoDB Connected");
-})
-.catch((err) => {
-  console.log("❌ MongoDB Error:", err.message);
-});
+.then(() => console.log("✅ MongoDB Connected"))
+.catch((err) => console.log("❌ MongoDB Error:", err.message));
 
 /* =========================
    Models
@@ -29,7 +29,7 @@ mongoose.connect(
 
 const Product = mongoose.model("Product", {
   name: String,
-  price: String,
+  price: Number,
   image: String,
 });
 
@@ -39,9 +39,18 @@ const Order = mongoose.model("Order", {
   customer: Object,
 });
 
+// 👇 اصلاح مهم: پیام پشتیبانی باید جواب هم داشته باشد
 const Support = mongoose.model("Support", {
   name: String,
   msg: String,
+  reply: {
+    type: String,
+    default: ""
+  },
+  createdAt: {
+    type: Date,
+    default: Date.now
+  }
 });
 
 /* =========================
@@ -64,19 +73,19 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 /* =========================
-   Pages
+   Pages (اصلاح مسیرها)
 ========================= */
 
 app.get("/", (req, res) => {
-  res.sendFile(__dirname + "/index.html");
+  res.sendFile(path.join(__dirname, "public", "index.html"));
 });
 
 app.get("/admin.html", (req, res) => {
-  res.sendFile(__dirname + "/admin.html");
+  res.sendFile(path.join(__dirname, "public", "admin.html"));
 });
 
 app.get("/login.html", (req, res) => {
-  res.sendFile(__dirname + "/login.html");
+  res.sendFile(path.join(__dirname, "public", "login.html"));
 });
 
 /* =========================
@@ -84,15 +93,18 @@ app.get("/login.html", (req, res) => {
 ========================= */
 
 app.post("/add-product", upload.single("image"), async (req, res) => {
-  const product = new Product({
-    name: req.body.name,
-    price: req.body.price,
-    image: "/uploads/" + req.file.filename,
-  });
+  try {
+    const product = new Product({
+      name: req.body.name,
+      price: Number(req.body.price),
+      image: "/uploads/" + req.file.filename,
+    });
 
-  await product.save();
-
-  res.json({ success: true });
+    await product.save();
+    res.json({ success: true });
+  } catch (err) {
+    res.json({ success: false, error: err.message });
+  }
 });
 
 app.get("/products", async (req, res) => {
@@ -126,20 +138,36 @@ app.delete("/delete-order/:id", async (req, res) => {
 });
 
 /* =========================
-   Support
+   Support (اصلاح مهم)
 ========================= */
 
+// ارسال پیام
 app.post("/support", async (req, res) => {
-  const support = new Support(req.body);
+  const support = new Support({
+    name: req.body.name,
+    msg: req.body.msg,
+  });
+
   await support.save();
   res.json({ success: true });
 });
 
+// گرفتن پیام‌ها
 app.get("/support", async (req, res) => {
-  const supports = await Support.find();
+  const supports = await Support.find().sort({ createdAt: -1 });
   res.json(supports);
 });
 
+// جواب دادن ادمین
+app.post("/support/reply/:id", async (req, res) => {
+  await Support.findByIdAndUpdate(req.params.id, {
+    reply: req.body.reply
+  });
+
+  res.json({ success: true });
+});
+
+// حذف پیام
 app.delete("/support/:id", async (req, res) => {
   await Support.findByIdAndDelete(req.params.id);
   res.json({ success: true });
