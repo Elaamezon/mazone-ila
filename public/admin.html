@@ -50,7 +50,6 @@ button:hover{
   padding:15px;
   border-radius:18px;
   margin-top:15px;
-  box-shadow:0 0 15px rgba(0,0,0,0.4);
 }
 
 img{
@@ -74,132 +73,84 @@ img{
   width:320px;
 }
 
-.top{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-}
+.section{ margin-top:40px; }
 
-.replyBox{
-  margin-top:10px;
-}
-
-.section{
-  margin-top:40px;
+.deleteBtn{
+  background:#c4002f;
 }
 
 .smallBtn{
   background:#333;
 }
 
-.deleteBtn{
-  background:#c4002f;
-}
-
-.orderItems{
-  background:#222;
-  padding:10px;
-  border-radius:10px;
-  margin-top:10px;
-}
-
 </style>
-
 </head>
 
 <body>
 
 <!-- LOGIN -->
-
 <div id="loginBox">
-
   <div class="loginCard">
 
     <h2>ورود ادمین 🔐</h2>
 
     <input id="user" placeholder="یوزرنیم">
-
     <input id="pass" type="password" placeholder="پسورد">
 
-    <button onclick="login()">
-      ورود
-    </button>
-
+    <button onclick="login()">ورود</button>
     <p id="msg"></p>
 
   </div>
-
 </div>
 
 <!-- PANEL -->
-
 <div id="panel" style="display:none;">
 
-  <div class="top">
-
-    <h1>⚙️ پنل ادمین مزون ایلا</h1>
-
-    <button onclick="logout()">
-      خروج 🚪
-    </button>
-
+  <div style="display:flex;justify-content:space-between;">
+    <h1>⚙️ پنل ادمین</h1>
+    <button onclick="logout()">خروج 🚪</button>
   </div>
 
   <!-- ADD PRODUCT -->
-
   <div class="section">
 
     <h2>➕ افزودن محصول</h2>
 
     <input id="name" placeholder="نام محصول">
-
     <input id="price" placeholder="قیمت">
 
-    <input id="image" placeholder="لینک عکس">
+    <!-- ✅ آپلود عکس -->
+    <input type="file" id="imageFile">
 
-    <button onclick="addProduct()">
-      افزودن محصول
-    </button>
+    <button onclick="addProduct()">افزودن محصول</button>
 
   </div>
 
   <!-- PRODUCTS -->
-
   <div class="section">
 
     <h2>📦 محصولات</h2>
-
-    <button class="smallBtn" onclick="loadProducts()">
-      رفرش محصولات
-    </button>
+    <button class="smallBtn" onclick="loadProducts()">رفرش</button>
 
     <div id="products"></div>
 
   </div>
 
   <!-- ORDERS -->
-
   <div class="section">
 
     <h2>🧾 سفارش‌ها</h2>
-
-    <button class="smallBtn" onclick="loadOrders()">
-      رفرش سفارش‌ها
-    </button>
+    <button class="smallBtn" onclick="loadOrders()">رفرش</button>
 
     <div id="orders"></div>
 
   </div>
 
   <!-- SUPPORT -->
-
   <div class="section">
 
     <h2>💬 پشتیبانی</h2>
-
-    <button class="smallBtn" onclick="loadSupport()">
-      رفرش پیام‌ها
-    </button>
+    <button class="smallBtn" onclick="loadSupport()">رفرش</button>
 
     <div id="supportList"></div>
 
@@ -210,300 +161,171 @@ img{
 <script>
 
 /* LOGIN */
-
 function login(){
-
-  const user =
-    document.getElementById("user").value;
-
-  const pass =
-    document.getElementById("pass").value;
+  const user = document.getElementById("user").value;
+  const pass = document.getElementById("pass").value;
 
   if(user === "admin" && pass === "1234"){
-
     localStorage.setItem("admin","true");
-
     showPanel();
-
-  }else{
-
-    document.getElementById("msg")
-    .innerText = "اطلاعات اشتباه است";
-
+  } else {
+    document.getElementById("msg").innerText = "اشتباه است";
   }
-
 }
 
 function showPanel(){
-
-  document.getElementById("loginBox")
-  .style.display = "none";
-
-  document.getElementById("panel")
-  .style.display = "block";
+  document.getElementById("loginBox").style.display="none";
+  document.getElementById("panel").style.display="block";
 
   loadProducts();
   loadOrders();
   loadSupport();
-
 }
 
-if(localStorage.getItem("admin") === "true"){
+if(localStorage.getItem("admin")==="true"){
   showPanel();
 }
 
 function logout(){
-
   localStorage.removeItem("admin");
-
   location.reload();
-
 }
 
-/* PRODUCTS */
+/* =========================
+   PRODUCTS
+========================= */
 
 async function addProduct(){
 
-  const name =
-    document.getElementById("name").value;
+  const name = document.getElementById("name").value;
+  const price = document.getElementById("price").value;
+  const file = document.getElementById("imageFile").files[0];
 
-  const price =
-    document.getElementById("price").value;
-
-  const image =
-    document.getElementById("image").value;
-
-  if(!name || !price || !image){
-    alert("همه فیلدها را کامل کن");
+  if(!name || !price || !file){
+    alert("همه فیلدها را پر کن");
     return;
   }
 
+  const formData = new FormData();
+  formData.append("name", name);
+  formData.append("price", price);
+  formData.append("image", file);
+
   const res = await fetch("/add-product", {
-
     method:"POST",
-
-    headers:{
-      "Content-Type":"application/json"
-    },
-
-    body: JSON.stringify({
-      name,
-      price,
-      image
-    })
-
+    body:formData
   });
 
   const data = await res.json();
 
   if(data.success){
-
-    alert("محصول اضافه شد ✅");
-
-    document.getElementById("name").value = "";
-    document.getElementById("price").value = "";
-    document.getElementById("image").value = "";
-
+    alert("محصول اضافه شد");
+    document.getElementById("name").value="";
+    document.getElementById("price").value="";
+    document.getElementById("imageFile").value="";
     loadProducts();
-
   }
-
 }
 
 async function loadProducts(){
 
   const res = await fetch("/products");
+  const data = await res.json();
 
-  const products = await res.json();
+  const box = document.getElementById("products");
+  box.innerHTML="";
 
-  const box =
-    document.getElementById("products");
-
-  box.innerHTML = "";
-
-  products.forEach(p => {
-
+  data.forEach(p=>{
     box.innerHTML += `
       <div class="card">
-
         <img src="${p.image}">
-
         <h3>${p.name}</h3>
-
         <p>${p.price} تومان</p>
-
-        <button class="deleteBtn"
-        onclick="deleteProduct('${p.id}')">
-          حذف محصول
-        </button>
-
+        <button class="deleteBtn" onclick="deleteProduct('${p.id}')">حذف</button>
       </div>
     `;
-
   });
-
 }
 
 async function deleteProduct(id){
-
-  await fetch("/delete-product/" + id, {
-    method:"DELETE"
-  });
-
+  await fetch("/delete-product/"+id,{method:"DELETE"});
   loadProducts();
-
 }
 
-/* ORDERS */
+/* =========================
+   ORDERS
+========================= */
 
 async function loadOrders(){
 
   const res = await fetch("/orders");
+  const data = await res.json();
 
-  const orders = await res.json();
+  const box = document.getElementById("orders");
+  box.innerHTML="";
 
-  const box =
-    document.getElementById("orders");
-
-  box.innerHTML = "";
-
-  orders.forEach(o => {
-
-    let itemsHTML = "";
-
-    o.items.forEach(i => {
-
-      itemsHTML += `
-        <div>
-          ${i.name} - ${i.price} تومان
-        </div>
-      `;
-
-    });
-
+  data.forEach(o=>{
     box.innerHTML += `
       <div class="card">
+        <h3>سفارش ${o.id}</h3>
+        <p>💰 ${o.total}</p>
+        <p>👤 ${o.customer?.name}</p>
+        <p>📞 ${o.customer?.phone}</p>
+        <p>📍 ${o.customer?.address}</p>
 
-        <h3>🧾 سفارش ${o.id}</h3>
-
-        <p>💰 ${o.total} تومان</p>
-
-        <p>👤 ${o.customer?.name || "-"}</p>
-
-        <p>📞 ${o.customer?.phone || "-"}</p>
-
-        <p>📍 ${o.customer?.address || "-"}</p>
-
-        <div class="orderItems">
-          ${itemsHTML}
-        </div>
-
-        <button class="deleteBtn"
-        onclick="deleteOrder('${o.id}')">
-          حذف سفارش
-        </button>
-
+        <button class="deleteBtn" onclick="deleteOrder('${o.id}')">حذف</button>
       </div>
     `;
-
   });
-
 }
 
 async function deleteOrder(id){
-
-  await fetch("/delete-order/" + id, {
-    method:"DELETE"
-  });
-
+  await fetch("/delete-order/"+id,{method:"DELETE"});
   loadOrders();
-
 }
 
-/* SUPPORT */
+/* =========================
+   SUPPORT
+========================= */
 
 async function loadSupport(){
 
   const res = await fetch("/support");
-
   const data = await res.json();
 
-  const box =
-    document.getElementById("supportList");
+  const box = document.getElementById("supportList");
+  box.innerHTML="";
 
-  box.innerHTML = "";
-
-  data.forEach(m => {
-
+  data.forEach(m=>{
     box.innerHTML += `
       <div class="card">
-
         <h3>${m.name}</h3>
-
         <p>${m.msg}</p>
 
-        <p>
-          پاسخ:
-          ${m.reply || "هنوز پاسخ داده نشده"}
-        </p>
+        <textarea id="r-${m.id}" placeholder="پاسخ"></textarea>
 
-        <div class="replyBox">
-
-          <textarea
-          id="reply-${m.id}"
-          placeholder="پاسخ ادمین"></textarea>
-
-          <button onclick="sendReply('${m.id}')">
-            ارسال پاسخ
-          </button>
-
-          <button class="deleteBtn"
-          onclick="deleteSupport('${m.id}')">
-            حذف پیام
-          </button>
-
-        </div>
-
+        <button onclick="reply('${m.id}')">ارسال پاسخ</button>
+        <button class="deleteBtn" onclick="deleteSupport('${m.id}')">حذف</button>
       </div>
     `;
-
   });
-
 }
 
-async function sendReply(id){
+async function reply(id){
+  const reply = document.getElementById("r-"+id).value;
 
-  const reply =
-    document.getElementById("reply-" + id).value;
-
-  await fetch("/support/reply/" + id, {
-
+  await fetch("/support/reply/"+id,{
     method:"POST",
-
-    headers:{
-      "Content-Type":"application/json"
-    },
-
-    body: JSON.stringify({
-      reply
-    })
-
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({reply})
   });
 
-  alert("پاسخ ارسال شد ✅");
-
   loadSupport();
-
 }
 
 async function deleteSupport(id){
-
-  await fetch("/support/" + id, {
-    method:"DELETE"
-  });
-
+  await fetch("/support/"+id,{method:"DELETE"});
   loadSupport();
-
 }
 
 </script>
