@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+<meta charset="UTF-8">
+<title>پنل ادمین - مزون ایلا</title>
+
+<style>
+body{
+  font-family:tahoma;
+  background:#111;
+  color:white;
+  padding:20px;
+}
+
+input, button{
+  padding:10px;
+  margin:5px 0;
+  width:300px;
+}
+
+button{
+  background:red;
+  color:white;
+  border:none;
+  cursor:pointer;
+}
+
+.card{
+  background:#222;
+  padding:15px;
+  border-radius:15px;
+  margin-top:15px;
+}
+
+img{
+  width:100px;
+}
+
+/* لاگین */
+#loginBox{
+  position:fixed;
+  top:0;
+  left:0;
+  width:100%;
+  height:100%;
+  background:#000;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+}
+</style>
+</head>
+
+<body>
+
+<!-- 🔐 لاگین -->
+<div id="loginBox">
+  <div>
+    <h2>ورود ادمین 🔐</h2>
+
+    <input id="user" placeholder="یوزرنیم">
+    <input id="pass" type="password" placeholder="پسورد">
+
+    <button onclick="login()">ورود</button>
+    <p id="msg"></p>
+  </div>
+</div>
+
+<!-- پنل اصلی -->
+<div id="panel" style="display:none;">
+
+<button onclick="logout()" style="background:black;">
+خروج 🚪
+</button>
+
+<h1>⚙️ پنل ادمین</h1>
+
+<hr>
+
+<h2>➕ افزودن محصول</h2>
+
+<input id="name" placeholder="نام محصول">
+<input id="price" placeholder="قیمت">
+<input type="file" id="image">
+
+<button onclick="addProduct()">افزودن</button>
+
+<hr>
+
+<h2>📦 محصولات</h2>
+<div id="products"></div>
+
+<hr>
+
+<h2>🧾 سفارش‌ها</h2>
+<div id="orders"></div>
+
+<hr>
+
+<!-- ⭐ پشتیبانی -->
+<h2>💬 پیام‌های پشتیبانی</h2>
+<div id="supportList"></div>
+
+</div>
+
+<script>
+
+/* =========================
+   لاگین
+========================= */
+function login(){
+  const user = document.getElementById("user").value;
+  const pass = document.getElementById("pass").value;
+
+  if(user === "admin" && pass === "1234"){
+    localStorage.setItem("admin","true");
+
+    document.getElementById("loginBox").style.display="none";
+    document.getElementById("panel").style.display="block";
+
+    loadProducts();
+    loadOrders();
+    loadSupport();
+
+  } else {
+    document.getElementById("msg").innerText = "❌ اشتباه است";
+  }
+}
+
+/* بررسی ورود */
+if(localStorage.getItem("admin") === "true"){
+  document.getElementById("loginBox").style.display="none";
+  document.getElementById("panel").style.display="block";
+
+  loadProducts();
+  loadOrders();
+  loadSupport();
+}
+
+/* خروج */
+function logout(){
+  localStorage.removeItem("admin");
+  location.reload();
+}
+
+/* =========================
+   محصولات
+========================= */
+async function addProduct(){
+  const formData = new FormData();
+  formData.append("name", document.getElementById("name").value);
+  formData.append("price", document.getElementById("price").value);
+  formData.append("image", document.getElementById("image").files[0]);
+
+  await fetch("/add-product", {
+    method:"POST",
+    body:formData
+  });
+
+  loadProducts();
+}
+
+async function loadProducts(){
+  const res = await fetch("/products");
+  const products = await res.json();
+
+  const box = document.getElementById("products");
+  box.innerHTML = "";
+
+  products.forEach(p => {
+    box.innerHTML += `
+      <div class="card">
+        <img src="${p.image}">
+        <h3>${p.name}</h3>
+        <p>${p.price} تومان</p>
+
+        <button onclick="deleteProduct(${p.id})">حذف</button>
+      </div>
+    `;
+  });
+}
+
+async function deleteProduct(id){
+  await fetch("/delete-product/" + id, { method:"DELETE" });
+  loadProducts();
+}
+
+/* =========================
+   سفارش‌ها
+========================= */
+async function loadOrders(){
+  const res = await fetch("/orders");
+  const orders = await res.json();
+
+  const box = document.getElementById("orders");
+  box.innerHTML = "";
+
+  orders.forEach(o => {
+    box.innerHTML += `
+      <div class="card">
+        <h3>🧾 سفارش #${o.id}</h3>
+        <p>💰 ${o.total} تومان</p>
+        <p>👤 ${o.customer.name}</p>
+        <p>📞 ${o.customer.phone}</p>
+        <p>📍 ${o.customer.address}</p>
+
+        <button onclick="deleteOrder(${o.id})">حذف</button>
+        <button onclick="showItems(${o.id})">محصولات</button>
+      </div>
+    `;
+  });
+}
+
+async function deleteOrder(id){
+  await fetch("/delete-order/" + id, { method:"DELETE" });
+  loadOrders();
+}
+
+function showItems(id){
+  fetch("/orders")
+    .then(res => res.json())
+    .then(orders => {
+      const order = orders.find(o => o.id === id);
+
+      if(!order) return;
+
+      let text = "";
+      order.items.forEach(i => {
+        text += `${i.name} - ${i.price} تومان\n`;
+      });
+
+      alert(text);
+    });
+}
+
+/* =========================
+   ⭐ پشتیبانی
+========================= */
+async function loadSupport(){
+  const res = await fetch("/support");
+  const data = await res.json();
+
+  const box = document.getElementById("supportList");
+  box.innerHTML = "";
+
+  data.forEach(m => {
+    box.innerHTML += `
+      <div class="card">
+        <h4>${m.name}</h4>
+        <p>${m.msg}</p>
+      </div>
+    `;
+  });
+}
+
+</script>
+
+</body>
+</html>
