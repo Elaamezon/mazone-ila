@@ -139,8 +139,12 @@ let cart = JSON.parse(localStorage.getItem("cart")) || [];
 loadProducts();
 updateCart();
 
-/* محصولات */
+/* =========================
+   محصولات
+========================= */
+
 async function loadProducts(){
+
   const res = await fetch("/products");
   const data = await res.json();
 
@@ -161,14 +165,16 @@ async function loadProducts(){
   });
 }
 
-/* افزودن به سبد */
+/* =========================
+   سبد خرید
+========================= */
+
 function addToCart(p){
   cart.push(p);
   localStorage.setItem("cart", JSON.stringify(cart));
   updateCart();
 }
 
-/* آپدیت */
 function updateCart(){
   document.getElementById("cartCount").innerText = cart.length;
 
@@ -196,26 +202,26 @@ function updateCart(){
     "مجموع: " + total + " تومان";
 }
 
-/* حذف */
 function removeItem(i){
   cart.splice(i,1);
   localStorage.setItem("cart", JSON.stringify(cart));
   updateCart();
 }
 
-/* خالی */
 function clearCart(){
   cart = [];
   localStorage.removeItem("cart");
   updateCart();
 }
 
-/* باز کردن سبد */
 function openCart(){
   document.getElementById("cartBox").classList.toggle("active");
 }
 
-/* ثبت سفارش */
+/* =========================
+   ثبت سفارش
+========================= */
+
 async function checkout(){
 
   if(cart.length === 0){
