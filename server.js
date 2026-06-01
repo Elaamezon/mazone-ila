@@ -21,7 +21,7 @@ app.use(express.json());
 let products = [];
 let orders = [];
 let supports = [];
-let messages = []; // برای چت واتساپی
+let messages = []; // چت واتساپ
 
 /* =========================
    محصولات
@@ -36,7 +36,7 @@ app.post("/add-product", (req, res) => {
   };
 
   products.push(product);
-  res.json({ success: true, product });
+  res.json({ success: true });
 });
 
 app.get("/products", (req, res) => {
@@ -62,7 +62,7 @@ app.post("/create-order", (req, res) => {
   };
 
   orders.push(order);
-  res.json({ success: true, order });
+  res.json({ success: true });
 });
 
 app.get("/orders", (req, res) => {
@@ -75,7 +75,7 @@ app.delete("/delete-order/:id", (req, res) => {
 });
 
 /* =========================
-   پشتیبانی (غیر چت)
+   پشتیبانی ساده
 ========================= */
 
 app.post("/support", (req, res) => {
@@ -101,7 +101,6 @@ app.post("/support/reply/:id", (req, res) => {
   if (msg) msg.reply = req.body.reply;
 
   io.emit("support_update", supports);
-
   res.json({ success: true });
 });
 
@@ -112,7 +111,7 @@ app.delete("/support/:id", (req, res) => {
 });
 
 /* =========================
-   💬 چت واتساپی واقعی (Socket.io)
+   💬 چت واتساپ واقعی
 ========================= */
 
 io.on("connection", (socket) => {
@@ -125,64 +124,10 @@ io.on("connection", (socket) => {
       id: Date.now().toString(),
       text: data.text,
       sender: data.sender,
-      time: new Date()
-    };
-
-    messages.push(msg);
-
-    io.emit("new_message", msg);
-  });
-
-  socket.on("disconnect", () => {
-    console.log("User disconnected");
-  });
-});
-
-/* =========================
-   Start Server
-========================= */
-
-const PORT = process.env.PORT || 10000;
-
-server.listen(PORT, () => {
-  console.log("🚀 Server running on " + PORT);
-});
-const express = require("express");
-const path = require("path");
-const http = require("http");
-const { Server } = require("socket.io");
-
-const app = express();
-const server = http.createServer(app);
-const io = new Server(server);
-
-app.use(express.static(path.join(__dirname, "public")));
-app.use(express.json());
-
-/* پیام‌ها */
-let messages = [];
-
-/* =========================
-   Socket Chat WhatsApp Style
-========================= */
-
-io.on("connection", (socket) => {
-  console.log("User connected:", socket.id);
-
-  // ارسال تاریخچه چت
-  socket.emit("chat_history", messages);
-
-  // دریافت پیام جدید
-  socket.on("send_message", (data) => {
-    const msg = {
-      id: Date.now().toString(),
-      text: data.text,
-      sender: data.sender, // user or admin
       time: new Date().toLocaleTimeString()
     };
 
     messages.push(msg);
-
     io.emit("new_message", msg);
   });
 
