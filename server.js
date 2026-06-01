@@ -1,4 +1,3 @@
-```js
 const express = require("express");
 const multer = require("multer");
 const path = require("path");
@@ -11,7 +10,7 @@ app.use(express.static("public"));
 app.use(express.json());
 
 /* =========================
-   MongoDB (SAFE CONNECT)
+   MongoDB
 ========================= */
 
 mongoose.connect(
@@ -25,7 +24,7 @@ mongoose.connect(
 });
 
 /* =========================
-   MODELS
+   Models
 ========================= */
 
 const Product = mongoose.model("Product", {
@@ -46,20 +45,17 @@ const Support = mongoose.model("Support", {
 });
 
 /* =========================
-   UPLOAD
+   Upload
 ========================= */
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
     const dir = "public/uploads";
-
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
     }
-
     cb(null, dir);
   },
-
   filename: (req, file, cb) => {
     cb(null, Date.now() + path.extname(file.originalname));
   },
@@ -68,7 +64,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 /* =========================
-   PAGES
+   Pages
 ========================= */
 
 app.get("/", (req, res) => {
@@ -84,24 +80,19 @@ app.get("/login.html", (req, res) => {
 });
 
 /* =========================
-   PRODUCTS
+   Products
 ========================= */
 
 app.post("/add-product", upload.single("image"), async (req, res) => {
-  try {
-    const product = new Product({
-      name: req.body.name,
-      price: req.body.price,
-      image: "/uploads/" + req.file.filename,
-    });
+  const product = new Product({
+    name: req.body.name,
+    price: req.body.price,
+    image: "/uploads/" + req.file.filename,
+  });
 
-    await product.save();
+  await product.save();
 
-    res.json({ success: true });
-
-  } catch (err) {
-    res.json({ error: err.message });
-  }
+  res.json({ success: true });
 });
 
 app.get("/products", async (req, res) => {
@@ -115,7 +106,7 @@ app.delete("/delete-product/:id", async (req, res) => {
 });
 
 /* =========================
-   ORDERS
+   Orders
 ========================= */
 
 app.post("/create-order", async (req, res) => {
@@ -135,7 +126,7 @@ app.delete("/delete-order/:id", async (req, res) => {
 });
 
 /* =========================
-   SUPPORT
+   Support
 ========================= */
 
 app.post("/support", async (req, res) => {
@@ -155,7 +146,7 @@ app.delete("/support/:id", async (req, res) => {
 });
 
 /* =========================
-   START SERVER
+   Start
 ========================= */
 
 const PORT = process.env.PORT || 3000;
@@ -163,4 +154,3 @@ const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
   console.log("🚀 Server running on port " + PORT);
 });
-```
