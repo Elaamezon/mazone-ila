@@ -95,17 +95,18 @@ body{
   bottom:20px;
   right:20px;
   width:300px;
-  height:400px;
   background:white;
   border-radius:15px;
   display:none;
   flex-direction:column;
+  padding:10px;
 }
 
 #supportBox.active{
   display:flex;
 }
 
+/* چت */
 #chatBox{
   position:fixed;
   bottom:20px;
@@ -130,8 +131,8 @@ input{
   width:100%;
   box-sizing:border-box;
 }
-
 </style>
+
 </head>
 
 <body>
@@ -154,9 +155,9 @@ input{
   <button onclick="toggleCart()">بستن</button>
   <div id="cartItems"></div>
 
-  <input id="name" placeholder="نام">
-  <input id="phone" placeholder="شماره">
-  <input id="address" placeholder="آدرس">
+  <input id="custName" placeholder="نام">
+  <input id="custPhone" placeholder="شماره">
+  <input id="custAddress" placeholder="آدرس">
 
   <button onclick="checkout()">ثبت سفارش</button>
 </div>
@@ -170,7 +171,7 @@ input{
   <button onclick="toggleSupport()">بستن</button>
 </div>
 
-<!-- چت واتساپی -->
+<!-- چت -->
 <div id="chatBox">
   <div style="background:#222;padding:10px;">چت آنلاین</div>
 
@@ -187,7 +188,9 @@ const socket = io();
 
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
 
-/* محصولات */
+/* =========================
+   محصولات
+========================= */
 async function loadProducts(){
   const res = await fetch("/products");
   const data = await res.json();
@@ -196,16 +199,21 @@ async function loadProducts(){
   box.innerHTML = "";
 
   data.forEach(p=>{
-    box.innerHTML += `
-      <div class="card">
-        <img src="${p.image}">
-        <div>
-          <h4>${p.name}</h4>
-          <p class="price">${p.price}</p>
-          <button onclick='add(${JSON.stringify(p)})'>افزودن</button>
-        </div>
+    const div = document.createElement("div");
+    div.className = "card";
+
+    div.innerHTML = `
+      <img src="${p.image}">
+      <div>
+        <h4>${p.name}</h4>
+        <p class="price">${p.price}</p>
+        <button>افزودن</button>
       </div>
     `;
+
+    div.querySelector("button").onclick = () => add(p);
+
+    box.appendChild(div);
   });
 }
 
@@ -249,20 +257,22 @@ async function checkout(){
       items:cart,
       total:cart.reduce((a,b)=>a+Number(b.price),0),
       customer:{
-        name:name.value,
-        phone:phone.value,
-        address:address.value
+        name:custName.value,
+        phone:custPhone.value,
+        address:custAddress.value
       }
     })
   });
 
-  alert("ثبت شد");
+  alert("ثبت شد ✅");
   cart=[];
   localStorage.removeItem("cart");
   updateCart();
 }
 
-/* پشتیبانی */
+/* =========================
+   پشتیبانی
+========================= */
 function toggleSupport(){
   document.getElementById("supportBox").classList.toggle("active");
 }
@@ -277,11 +287,13 @@ async function sendSupport(){
     })
   });
 
-  alert("ارسال شد");
   supMsg.value="";
+  alert("ارسال شد");
 }
 
-/* چت واتساپ */
+/* =========================
+   چت واتساپ
+========================= */
 function sendChat(){
   const text = chatInput.value;
   if(!text) return;
@@ -304,7 +316,18 @@ socket.on("new_message",(msg)=>{
 
 function addMsg(msg){
   const box = document.getElementById("msgs");
-  box.innerHTML += `<div>${msg.sender}: ${msg.text}</div>`;
+
+  const div = document.createElement("div");
+  div.style.margin = "5px";
+  div.style.padding = "8px";
+  div.style.borderRadius = "10px";
+  div.style.background = msg.sender === "user" ? "#4caf50" : "#333";
+  div.style.color = "white";
+
+  div.innerText = msg.text;
+
+  box.appendChild(div);
+  box.scrollTop = box.scrollHeight;
 }
 
 /* init */
