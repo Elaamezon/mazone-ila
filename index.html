@@ -308,3 +308,33 @@ async function sendSupport(){
 
 </body>
 </html>
+<div id="chatBox" style="
+position:fixed;
+bottom:20px;
+right:20px;
+width:300px;
+height:400px;
+background:#111;
+color:white;
+border-radius:15px;
+display:flex;
+flex-direction:column;
+overflow:hidden;
+">
+
+  <div style="background:#222;padding:10px;">
+    💬 چت آنلاین
+  </div>
+
+  <div id="messages" style="
+    flex:1;
+    padding:10px;
+    overflow:auto;
+  "></div>
+
+  <div style="display:flex;">
+    <input id="msgInput" style="flex:1;padding:10px;">
+    <button onclick="sendMsg()">➤</button>
+  </div>
+
+</div>
