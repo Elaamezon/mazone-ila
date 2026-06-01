@@ -3,101 +3,63 @@ const express = require("express");
 const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
+const mongoose = require("mongoose");
 
 const app = express();
+
+/* =========================
+   اتصال MongoDB
+========================= */
+
+mongoose.connect(
+  "mongodb+srv://admin:123456Aa@cluster0.abcd1.mongodb.net/shop"
+);
+
+mongoose.connection.once("open", () => {
+  console.log("✅ MongoDB Connected");
+});
+
+/* =========================
+   تنظیمات
+========================= */
 
 app.use(express.static("public"));
 app.use(express.json());
 
 /* =========================
-   دیتابیس
+   مدل محصولات
 ========================= */
-const DATA_FILE = "./data.json";
 
-let products = [];
-let orders = [];
-let supports = [];
+const Product = mongoose.model("Product", {
+  name: String,
+  price: String,
+  image: String,
+});
 
 /* =========================
-   ساخت فایل اولیه
+   مدل سفارش‌ها
 ========================= */
-function initFile() {
 
-  if (!fs.existsSync(DATA_FILE)) {
-
-    fs.writeFileSync(
-      DATA_FILE,
-      JSON.stringify(
-        {
-          products: [],
-          orders: [],
-          supports: []
-        },
-        null,
-        2
-      )
-    );
-
-  }
-
-}
+const Order = mongoose.model("Order", {
+  items: Array,
+  total: Number,
+  customer: Object,
+});
 
 /* =========================
-   لود دیتا
+   مدل پشتیبانی
 ========================= */
-function loadData() {
 
-  try {
-
-    initFile();
-
-    const data = JSON.parse(
-      fs.readFileSync(DATA_FILE, "utf-8")
-    );
-
-    products = data.products || [];
-    orders = data.orders || [];
-    supports = data.supports || [];
-
-  } catch (err) {
-
-    console.log("⚠️ DB reset");
-
-    products = [];
-    orders = [];
-    supports = [];
-
-  }
-
-}
+const Support = mongoose.model("Support", {
+  name: String,
+  msg: String,
+});
 
 /* =========================
-   ذخیره دیتا
+   آپلود فایل
 ========================= */
-function saveData() {
 
-  fs.writeFileSync(
-    DATA_FILE,
-    JSON.stringify(
-      {
-        products,
-        orders,
-        supports
-      },
-      null,
-      2
-    )
-  );
-
-}
-
-loadData();
-
-/* =========================
-   پوشه آپلود
-========================= */
 const storage = multer.diskStorage({
-
   destination: (req, file, cb) => {
 
     const dir = "public/uploads";
@@ -107,7 +69,6 @@ const storage = multer.diskStorage({
     }
 
     cb(null, dir);
-
   },
 
   filename: (req, file, cb) => {
@@ -117,14 +78,13 @@ const storage = multer.diskStorage({
       Date.now() + path.extname(file.originalname)
     );
 
-  }
-
+  },
 });
 
 const upload = multer({ storage });
 
 /* =========================
-   صفحات
+   صفحات سایت
 ========================= */
 
 app.get("/", (req, res) => {
@@ -140,13 +100,13 @@ app.get("/login.html", (req, res) => {
 });
 
 /* =========================
-   محصولات
+   افزودن محصول
 ========================= */
 
 app.post(
   "/add-product",
   upload.single("image"),
-  (req, res) => {
+  async (req, res) => {
 
     if (!req.file) {
       return res.json({
@@ -154,139 +114,140 @@ app.post(
       });
     }
 
-    const product = {
-      id: Date.now(),
-      name: req.body.name || "",
-      price: req.body.price || 0,
-      image: "/uploads/" + req.file.filename
-    };
+    const product = new Product({
+      name: req.body.name,
+      price: req.body.price,
+      image: "/uploads/" + req.file.filename,
+    });
 
-    products.push(product);
-
-    saveData();
+    await product.save();
 
     res.json({
-      success: true
+      success: true,
     });
 
   }
 );
 
-app.get("/products", (req, res) => {
+/* =========================
+   گرفتن محصولات
+========================= */
+
+app.get("/products", async (req, res) => {
+
+  const products = await Product.find();
 
   res.json(products);
 
 });
 
-app.delete("/delete-product/:id", (req, res) => {
+/* =========================
+   حذف محصول
+========================= */
 
-  const id = Number(req.params.id);
+app.delete("/delete-product/:id", async (req, res) => {
 
-  products = products.filter(
-    p => p.id !== id
-  );
-
-  saveData();
+  await Product.findByIdAndDelete(req.params.id);
 
   res.json({
-    success: true
+    success: true,
   });
 
 });
 
 /* =========================
-   سفارش‌ها
+   ثبت سفارش
 ========================= */
 
-app.post("/create-order", (req, res) => {
+app.post("/create-order", async (req, res) => {
 
-  const order = {
-    id: Date.now(),
-    items: req.body.items || [],
-    total: req.body.total || 0,
-    customer: req.body.customer || {}
-  };
+  const order = new Order({
+    items: req.body.items,
+    total: req.body.total,
+    customer: req.body.customer,
+  });
 
-  orders.push(order);
-
-  saveData();
+  await order.save();
 
   res.json({
-    success: true
+    success: true,
   });
 
 });
 
-app.get("/orders", (req, res) => {
+/* =========================
+   گرفتن سفارش‌ها
+========================= */
+
+app.get("/orders", async (req, res) => {
+
+  const orders = await Order.find();
 
   res.json(orders);
 
 });
 
-app.delete("/delete-order/:id", (req, res) => {
+/* =========================
+   حذف سفارش
+========================= */
 
-  const id = Number(req.params.id);
+app.delete("/delete-order/:id", async (req, res) => {
 
-  orders = orders.filter(
-    o => o.id !== id
-  );
-
-  saveData();
+  await Order.findByIdAndDelete(req.params.id);
 
   res.json({
-    success: true
+    success: true,
   });
 
 });
 
 /* =========================
-   پشتیبانی
+   ثبت پیام پشتیبانی
 ========================= */
 
-app.post("/support", (req, res) => {
+app.post("/support", async (req, res) => {
 
-  const msg = {
-    id: Date.now(),
-    name: req.body.name || "ناشناس",
-    msg: req.body.msg || ""
-  };
+  const support = new Support({
+    name: req.body.name,
+    msg: req.body.msg,
+  });
 
-  supports.push(msg);
-
-  saveData();
+  await support.save();
 
   res.json({
-    success: true
+    success: true,
   });
 
 });
 
-app.get("/support", (req, res) => {
+/* =========================
+   گرفتن پیام‌ها
+========================= */
+
+app.get("/support", async (req, res) => {
+
+  const supports = await Support.find();
 
   res.json(supports);
 
 });
 
-/* حذف پیام پشتیبانی */
+/* =========================
+   حذف پیام پشتیبانی
+========================= */
 
-app.delete("/support/:id", (req, res) => {
+app.delete("/support/:id", async (req, res) => {
 
-  const id = Number(req.params.id);
-
-  supports = supports.filter(
-    s => s.id !== id
-  );
-
-  saveData();
+  await Support.findByIdAndDelete(req.params.id);
 
   res.json({
-    success: true
+    success: true,
   });
 
 });
 
 /* =========================
-   اجرا
+   اجرای سرور
 ========================= */
 
 const PORT = process.env.PORT || 3000;
