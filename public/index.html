@@ -1,0 +1,337 @@
+<!DOCTYPE html>
+<html lang="fa">
+
+<head>
+
+<title>مزون ایلا</title>
+
+<meta charset="UTF-8">
+
+<style>
+
+body{
+  background:white;
+  font-family:tahoma;
+  padding:20px;
+}
+
+.topbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  margin-bottom:20px;
+}
+
+#products{
+  display:grid;
+  grid-template-columns:repeat(auto-fill,minmax(220px,1fr));
+  gap:20px;
+}
+
+.card{
+  border:1px solid #ddd;
+  border-radius:15px;
+  overflow:hidden;
+  box-shadow:0 0 10px rgba(0,0,0,0.1);
+}
+
+.card img{
+  width:100%;
+  height:250px;
+  object-fit:cover;
+}
+
+.info{
+  padding:15px;
+}
+
+.price{
+  color:red;
+  font-size:20px;
+}
+
+button{
+  background:red;
+  color:white;
+  border:none;
+  padding:10px;
+  width:100%;
+  cursor:pointer;
+  border-radius:10px;
+}
+
+/* سبد خرید */
+#cartBox{
+  position:fixed;
+  top:0;
+  right:-400px;
+  width:350px;
+  height:100%;
+  background:#111;
+  color:white;
+  padding:20px;
+  transition:0.4s;
+  overflow:auto;
+}
+
+#cartBox.active{
+  right:0;
+}
+
+.cartItem{
+  display:flex;
+  align-items:center;
+  gap:15px;
+  border-bottom:1px solid #444;
+  padding:10px 0;
+}
+
+.cartItem img{
+  width:80px;
+  height:80px;
+  object-fit:cover;
+  border-radius:10px;
+}
+
+/* فرم مشتری */
+input{
+  width:100%;
+  padding:10px;
+  margin:5px 0;
+  border-radius:8px;
+  border:none;
+}
+
+</style>
+
+</head>
+
+<body>
+
+<!-- بالا -->
+<div class="topbar">
+
+  <h1>مزون ایلا</h1>
+
+  <h2 onclick="openCart()" style="cursor:pointer">
+    🛒 سبد خرید:
+    <span id="cartCount">0</span>
+  </h2>
+
+</div>
+
+<!-- محصولات -->
+<div id="products"></div>
+
+<!-- سبد خرید -->
+<div id="cartBox">
+
+  <h2>سبد خرید 🛒</h2>
+
+  <div id="cartItems"></div>
+
+  <h3 id="totalPrice">مجموع: 0 تومان</h3>
+
+  <!-- 👇 اطلاعات مشتری -->
+  <hr>
+
+  <h3>اطلاعات سفارش 🧾</h3>
+
+  <input id="custName" placeholder="نام و نام خانوادگی">
+  <input id="custPhone" placeholder="شماره تماس">
+  <input id="custAddress" placeholder="آدرس کامل">
+
+  <button onclick="clearCart()">خالی کردن سبد</button>
+
+  <br><br>
+
+  <button onclick="checkout()">ثبت سفارش 🧾</button>
+
+</div>
+
+<!-- JS -->
+<script>
+
+let cart = JSON.parse(localStorage.getItem("cart")) || [];
+
+loadProducts();
+updateCart();
+
+/* گرفتن محصولات */
+async function loadProducts(){
+
+  const res = await fetch("/products");
+  const products = await res.json();
+
+  const box = document.getElementById("products");
+
+  box.innerHTML = "";
+
+  products.forEach(product => {
+
+    box.innerHTML += `
+      <div class="card">
+
+        <img src="${product.image}">
+
+        <div class="info">
+
+          <h3>${product.name}</h3>
+
+          <p class="price">${product.price} تومان</p>
+
+          <button onclick='addToCart(${JSON.stringify(product)})'>
+            افزودن به سبد
+          </button>
+
+        </div>
+
+      </div>
+    `;
+
+  });
+
+}
+
+/* افزودن */
+function addToCart(product){
+
+  cart.push(product);
+
+  localStorage.setItem("cart", JSON.stringify(cart));
+
+  updateCart();
+
+}
+
+/* آپدیت */
+function updateCart(){
+
+  document.getElementById("cartCount").innerText = cart.length;
+
+  const cartItems = document.getElementById("cartItems");
+
+  cartItems.innerHTML = "";
+
+  let total = 0;
+
+  cart.forEach((item, index) => {
+
+    total += Number(item.price);
+
+    cartItems.innerHTML += `
+      <div class="cartItem">
+
+        <img src="${item.image}">
+
+        <div>
+
+          <h3>${item.name}</h3>
+
+          <p>${item.price} تومان</p>
+
+          <button onclick="removeItem(${index})">حذف</button>
+
+        </div>
+
+      </div>
+    `;
+
+  });
+
+  document.getElementById("totalPrice").innerText =
+    "مجموع: " + total + " تومان";
+
+}
+
+/* حذف */
+function removeItem(index){
+
+  cart.splice(index, 1);
+
+  localStorage.setItem("cart", JSON.stringify(cart));
+
+  updateCart();
+
+}
+
+/* خالی */
+function clearCart(){
+
+  cart = [];
+
+  localStorage.removeItem("cart");
+
+  updateCart();
+
+}
+
+/* باز کردن سبد */
+function openCart(){
+
+  document.getElementById("cartBox")
+  .classList.toggle("active");
+
+}
+
+/* ثبت سفارش واقعی */
+async function checkout(){
+
+  if(cart.length === 0){
+    alert("سبد خرید خالی است ❌");
+    return;
+  }
+
+  // گرفتن اطلاعات مشتری
+  const name = document.getElementById("custName").value;
+  const phone = document.getElementById("custPhone").value;
+  const address = document.getElementById("custAddress").value;
+
+  if(!name || !phone || !address){
+    alert("لطفاً اطلاعات را کامل وارد کنید ❌");
+    return;
+  }
+
+  let total = 0;
+
+  cart.forEach(item => {
+    total += Number(item.price);
+  });
+
+  const res = await fetch("/create-order", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json"
+    },
+    body: JSON.stringify({
+      items: cart,
+      total: total,
+      customer: {
+        name,
+        phone,
+        address
+      }
+    })
+  });
+
+  const data = await res.json();
+
+  if(data.success){
+
+    alert("سفارش ثبت شد ✅");
+
+    cart = [];
+    localStorage.removeItem("cart");
+
+    updateCart();
+
+  } else {
+    alert("خطا در ثبت سفارش ❌");
+  }
+
+}
+
+</script>
+
+</body>
+</html>
