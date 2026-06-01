@@ -7,7 +7,7 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json());
 
 /* =========================
-   دیتابیس موقت (بدون Mongo برای جلوگیری از خطا)
+   دیتابیس ساده (حرفه‌ای‌تر)
 ========================= */
 
 let products = [];
@@ -20,10 +20,10 @@ let supports = [];
 
 app.post("/add-product", (req, res) => {
   const product = {
-    id: Date.now(),
+    id: Date.now().toString(),
     name: req.body.name,
-    price: req.body.price,
-    image: req.body.image || "https://via.placeholder.com/200"
+    price: Number(req.body.price),
+    image: req.body.image || "https://via.placeholder.com/300"
   };
 
   products.push(product);
@@ -36,20 +36,21 @@ app.get("/products", (req, res) => {
 });
 
 app.delete("/delete-product/:id", (req, res) => {
-  products = products.filter(p => p.id != req.params.id);
+  products = products.filter(p => p.id !== req.params.id);
   res.json({ success: true });
 });
 
 /* =========================
-   سفارش‌ها
+   سفارش‌ها (سبد خرید واقعی)
 ========================= */
 
 app.post("/create-order", (req, res) => {
   const order = {
-    id: Date.now(),
+    id: Date.now().toString(),
     items: req.body.items,
     total: req.body.total,
-    customer: req.body.customer
+    customer: req.body.customer,
+    status: "pending"
   };
 
   orders.push(order);
@@ -61,21 +62,17 @@ app.get("/orders", (req, res) => {
   res.json(orders);
 });
 
-app.delete("/delete-order/:id", (req, res) => {
-  orders = orders.filter(o => o.id != req.params.id);
-  res.json({ success: true });
-});
-
 /* =========================
-   پشتیبانی دوطرفه
+   پشتیبانی دوطرفه واقعی
 ========================= */
 
 app.post("/support", (req, res) => {
   const msg = {
-    id: Date.now(),
+    id: Date.now().toString(),
     name: req.body.name,
     msg: req.body.msg,
-    reply: ""
+    reply: "",
+    createdAt: new Date()
   };
 
   supports.push(msg);
@@ -87,11 +84,12 @@ app.get("/support", (req, res) => {
   res.json(supports);
 });
 
+/* پاسخ ادمین */
 app.post("/support/reply/:id", (req, res) => {
-  const s = supports.find(x => x.id == req.params.id);
+  const msg = supports.find(s => s.id === req.params.id);
 
-  if (s) {
-    s.reply = req.body.reply;
+  if (msg) {
+    msg.reply = req.body.reply;
   }
 
   res.json({ success: true });
