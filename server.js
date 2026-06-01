@@ -5,38 +5,52 @@ const { Server } = require("socket.io");
 
 const app = express();
 const server = http.createServer(app);
-const io = new Server(server);
+
+/* =========================
+   Socket.io (Chat WhatsApp)
+========================= */
+const io = new Server(server, {
+  cors: {
+    origin: "*"
+  }
+});
 
 /* =========================
    Middleware
 ========================= */
-
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json());
 
 /* =========================
-   دیتابیس ساده
+   Database (Simple Memory)
 ========================= */
 
 let products = [];
 let orders = [];
 let supports = [];
-let messages = []; // چت واتساپ
+let messages = []; // chat
 
 /* =========================
-   محصولات
+   🛒 Products
 ========================= */
 
 app.post("/add-product", (req, res) => {
+  const { name, price, image } = req.body;
+
+  if (!name || !price) {
+    return res.json({ success: false, message: "Invalid data" });
+  }
+
   const product = {
     id: Date.now().toString(),
-    name: req.body.name,
-    price: Number(req.body.price),
-    image: req.body.image || "https://via.placeholder.com/300"
+    name,
+    price: Number(price),
+    image: image || "https://via.placeholder.com/300"
   };
 
   products.push(product);
-  res.json({ success: true });
+
+  res.json({ success: true, product });
 });
 
 app.get("/products", (req, res) => {
@@ -49,20 +63,21 @@ app.delete("/delete-product/:id", (req, res) => {
 });
 
 /* =========================
-   سفارش‌ها
+   🧾 Orders
 ========================= */
 
 app.post("/create-order", (req, res) => {
   const order = {
     id: Date.now().toString(),
-    items: req.body.items,
-    total: req.body.total,
-    customer: req.body.customer,
+    items: req.body.items || [],
+    total: req.body.total || 0,
+    customer: req.body.customer || {},
     createdAt: new Date()
   };
 
   orders.push(order);
-  res.json({ success: true });
+
+  res.json({ success: true, order });
 });
 
 app.get("/orders", (req, res) => {
@@ -75,7 +90,7 @@ app.delete("/delete-order/:id", (req, res) => {
 });
 
 /* =========================
-   پشتیبانی ساده
+   💬 Support (Ticket style)
 ========================= */
 
 app.post("/support", (req, res) => {
@@ -83,10 +98,12 @@ app.post("/support", (req, res) => {
     id: Date.now().toString(),
     name: req.body.name,
     msg: req.body.msg,
-    reply: ""
+    reply: "",
+    createdAt: new Date()
   };
 
   supports.push(msg);
+
   io.emit("support_update", supports);
 
   res.json({ success: true });
@@ -98,36 +115,45 @@ app.get("/support", (req, res) => {
 
 app.post("/support/reply/:id", (req, res) => {
   const msg = supports.find(m => m.id === req.params.id);
-  if (msg) msg.reply = req.body.reply;
+
+  if (msg) {
+    msg.reply = req.body.reply;
+  }
 
   io.emit("support_update", supports);
+
   res.json({ success: true });
 });
 
 app.delete("/support/:id", (req, res) => {
   supports = supports.filter(m => m.id !== req.params.id);
+
   io.emit("support_update", supports);
+
   res.json({ success: true });
 });
 
 /* =========================
-   💬 چت واتساپ واقعی
+   💬 WhatsApp Chat (Socket.io)
 ========================= */
 
 io.on("connection", (socket) => {
   console.log("User connected:", socket.id);
 
+  // send history
   socket.emit("chat_history", messages);
 
+  // new message
   socket.on("send_message", (data) => {
     const msg = {
       id: Date.now().toString(),
       text: data.text,
-      sender: data.sender,
+      sender: data.sender, // user / admin
       time: new Date().toLocaleTimeString()
     };
 
     messages.push(msg);
+
     io.emit("new_message", msg);
   });
 
@@ -137,11 +163,22 @@ io.on("connection", (socket) => {
 });
 
 /* =========================
-   Start
+   Home test
+========================= */
+
+app.get("/api", (req, res) => {
+  res.json({
+    success: true,
+    message: "Server is running 🚀"
+  });
+});
+
+/* =========================
+   Start Server
 ========================= */
 
 const PORT = process.env.PORT || 10000;
 
 server.listen(PORT, () => {
-  console.log("🚀 Server running on " + PORT);
+  console.log("🚀 Server running on port " + PORT);
 });
