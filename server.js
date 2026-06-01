@@ -15,7 +15,6 @@ app.use(express.json());
 ========================= */
 
 // فعلاً خاموش تا سایت بدون خطا بالا بیاید
-// بعداً لینک واقعی MongoDB را بگذار
 
 /*
 mongoose.connect(process.env.MONGO_URI)
