@@ -9,14 +9,14 @@
 
 body{
   font-family:tahoma;
-  background:#111;
+  background:#0f0f0f;
   color:white;
   padding:20px;
   margin:0;
 }
 
 h1,h2{
-  color:red;
+  color:#ff2d55;
 }
 
 input, textarea{
@@ -24,19 +24,21 @@ input, textarea{
   padding:12px;
   margin-top:10px;
   border:none;
-  border-radius:10px;
-  background:#222;
+  border-radius:12px;
+  background:#1f1f1f;
   color:white;
+  box-sizing:border-box;
 }
 
 button{
-  background:red;
+  background:#ff2d55;
   color:white;
   border:none;
-  padding:10px;
-  border-radius:10px;
+  padding:10px 15px;
+  border-radius:12px;
   cursor:pointer;
   margin-top:10px;
+  font-size:15px;
 }
 
 button:hover{
@@ -44,16 +46,16 @@ button:hover{
 }
 
 .card{
-  background:#1b1b1b;
+  background:#1a1a1a;
   padding:15px;
-  border-radius:15px;
+  border-radius:18px;
   margin-top:15px;
-  box-shadow:0 0 10px rgba(0,0,0,0.3);
+  box-shadow:0 0 15px rgba(0,0,0,0.4);
 }
 
 img{
-  width:100px;
-  border-radius:10px;
+  width:120px;
+  border-radius:12px;
 }
 
 #loginBox{
@@ -68,8 +70,8 @@ img{
 .loginCard{
   background:#1b1b1b;
   padding:30px;
-  border-radius:20px;
-  width:300px;
+  border-radius:25px;
+  width:320px;
 }
 
 .top{
@@ -82,89 +84,125 @@ img{
   margin-top:10px;
 }
 
+.section{
+  margin-top:40px;
+}
+
+.smallBtn{
+  background:#333;
+}
+
+.deleteBtn{
+  background:#c4002f;
+}
+
 </style>
 
 </head>
 
 <body>
 
-<!-- لاگین -->
+<!-- LOGIN -->
 
 <div id="loginBox">
 
-<div class="loginCard">
+  <div class="loginCard">
 
-<h2>ورود ادمین 🔐</h2>
+    <h2>ورود ادمین 🔐</h2>
 
-<input id="user" placeholder="یوزرنیم">
+    <input id="user" placeholder="یوزرنیم">
 
-<input id="pass" type="password" placeholder="پسورد">
+    <input id="pass" type="password" placeholder="پسورد">
 
-<button onclick="login()">
-ورود
-</button>
+    <button onclick="login()">
+      ورود
+    </button>
 
-<p id="msg"></p>
+    <p id="msg"></p>
+
+  </div>
 
 </div>
 
-</div>
-
-<!-- پنل -->
+<!-- PANEL -->
 
 <div id="panel" style="display:none;">
 
-<div class="top">
+  <div class="top">
 
-<h1>⚙️ پنل ادمین</h1>
+    <h1>⚙️ پنل ادمین مزون ایلا</h1>
 
-<button onclick="logout()">
-خروج 🚪
-</button>
+    <button onclick="logout()">
+      خروج 🚪
+    </button>
 
-</div>
+  </div>
 
-<hr>
+  <!-- ADD PRODUCT -->
 
-<!-- افزودن محصول -->
+  <div class="section">
 
-<h2>➕ افزودن محصول</h2>
+    <h2>➕ افزودن محصول</h2>
 
-<input id="name" placeholder="نام محصول">
+    <input id="name" placeholder="نام محصول">
 
-<input id="price" placeholder="قیمت">
+    <input id="price" placeholder="قیمت">
 
-<input id="image" placeholder="لینک عکس">
+    <input id="image" placeholder="لینک عکس">
 
-<button onclick="addProduct()">
-افزودن محصول
-</button>
+    <button onclick="addProduct()">
+      افزودن محصول
+    </button>
 
-<!-- محصولات -->
+  </div>
 
-<h2>📦 محصولات</h2>
+  <!-- PRODUCTS -->
 
-<div id="products"></div>
+  <div class="section">
 
-<!-- سفارش‌ها -->
+    <h2>📦 محصولات</h2>
 
-<h2>🧾 سفارش‌ها</h2>
+    <button class="smallBtn" onclick="loadProducts()">
+      رفرش محصولات
+    </button>
 
-<div id="orders"></div>
+    <div id="products"></div>
 
-<!-- پشتیبانی -->
+  </div>
 
-<h2>💬 پشتیبانی</h2>
+  <!-- ORDERS -->
 
-<div id="supportList"></div>
+  <div class="section">
+
+    <h2>🧾 سفارش‌ها</h2>
+
+    <button class="smallBtn" onclick="loadOrders()">
+      رفرش سفارش‌ها
+    </button>
+
+    <div id="orders"></div>
+
+  </div>
+
+  <!-- SUPPORT -->
+
+  <div class="section">
+
+    <h2>💬 پشتیبانی</h2>
+
+    <button class="smallBtn" onclick="loadSupport()">
+      رفرش پیام‌ها
+    </button>
+
+    <div id="supportList"></div>
+
+  </div>
 
 </div>
 
 <script>
 
-/* =========================
-   ورود
-========================= */
+/* LOGIN */
 
 function login(){
 
@@ -180,7 +218,7 @@ function login(){
 
     showPanel();
 
-  } else {
+  }else{
 
     document.getElementById("msg")
     .innerText = "اطلاعات اشتباه است";
@@ -215,9 +253,7 @@ function logout(){
 
 }
 
-/* =========================
-   محصولات
-========================= */
+/* PRODUCTS */
 
 async function addProduct(){
 
@@ -229,6 +265,11 @@ async function addProduct(){
 
   const image =
     document.getElementById("image").value;
+
+  if(!name || !price || !image){
+    alert("همه فیلدها را کامل کن");
+    return;
+  }
 
   const res = await fetch("/add-product", {
 
@@ -251,6 +292,10 @@ async function addProduct(){
   if(data.success){
 
     alert("محصول اضافه شد ✅");
+
+    document.getElementById("name").value = "";
+    document.getElementById("price").value = "";
+    document.getElementById("image").value = "";
 
     loadProducts();
 
@@ -280,8 +325,9 @@ async function loadProducts(){
 
         <p>${p.price} تومان</p>
 
-        <button onclick="deleteProduct('${p.id}')">
-          حذف
+        <button class="deleteBtn"
+        onclick="deleteProduct('${p.id}')">
+          حذف محصول
         </button>
 
       </div>
@@ -301,9 +347,7 @@ async function deleteProduct(id){
 
 }
 
-/* =========================
-   سفارش‌ها
-========================= */
+/* ORDERS */
 
 async function loadOrders(){
 
@@ -321,7 +365,7 @@ async function loadOrders(){
     box.innerHTML += `
       <div class="card">
 
-        <h3>🧾 سفارش</h3>
+        <h3>🧾 سفارش ${o.id}</h3>
 
         <p>💰 ${o.total} تومان</p>
 
@@ -333,6 +377,11 @@ async function loadOrders(){
 
         <button onclick="showItems('${o.id}')">
           مشاهده محصولات
+        </button>
+
+        <button class="deleteBtn"
+        onclick="deleteOrder('${o.id}')">
+          حذف سفارش
         </button>
 
       </div>
@@ -357,8 +406,11 @@ function showItems(id){
 
     order.items.forEach(i => {
 
-      text += `${i.name}
-${i.price} تومان\n\n`;
+      text += `
+${i.name}
+${i.price} تومان
+
+`;
 
     });
 
@@ -368,9 +420,17 @@ ${i.price} تومان\n\n`;
 
 }
 
-/* =========================
-   پشتیبانی
-========================= */
+async function deleteOrder(id){
+
+  await fetch("/delete-order/" + id, {
+    method:"DELETE"
+  });
+
+  loadOrders();
+
+}
+
+/* SUPPORT */
 
 async function loadSupport(){
 
@@ -394,12 +454,13 @@ async function loadSupport(){
 
         <p>
           پاسخ:
-          ${m.reply || "هنوز پاسخی داده نشده"}
+          ${m.reply || "هنوز پاسخ داده نشده"}
         </p>
 
         <div class="replyBox">
 
-          <textarea id="reply-${m.id}"
+          <textarea
+          id="reply-${m.id}"
           placeholder="پاسخ ادمین"></textarea>
 
           <button onclick="sendReply('${m.id}')">
