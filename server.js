@@ -6,10 +6,6 @@ const app = express();
 app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json());
 
-/* =========================
-   دیتابیس ساده (حرفه‌ای‌تر)
-========================= */
-
 let products = [];
 let orders = [];
 let supports = [];
@@ -19,6 +15,11 @@ let supports = [];
 ========================= */
 
 app.post("/add-product", (req, res) => {
+
+  if (!req.body.name || !req.body.price) {
+    return res.json({ success: false, message: "اطلاعات ناقص" });
+  }
+
   const product = {
     id: Date.now().toString(),
     name: req.body.name,
@@ -28,7 +29,7 @@ app.post("/add-product", (req, res) => {
 
   products.push(product);
 
-  res.json({ success: true });
+  res.json({ success: true, product });
 });
 
 app.get("/products", (req, res) => {
@@ -41,21 +42,23 @@ app.delete("/delete-product/:id", (req, res) => {
 });
 
 /* =========================
-   سفارش‌ها (سبد خرید واقعی)
+   سفارش‌ها
 ========================= */
 
 app.post("/create-order", (req, res) => {
+
   const order = {
     id: Date.now().toString(),
-    items: req.body.items,
-    total: req.body.total,
-    customer: req.body.customer,
-    status: "pending"
+    items: req.body.items || [],
+    total: Number(req.body.total || 0),
+    customer: req.body.customer || {},
+    status: "pending",
+    createdAt: new Date()
   };
 
   orders.push(order);
 
-  res.json({ success: true });
+  res.json({ success: true, order });
 });
 
 app.get("/orders", (req, res) => {
@@ -63,10 +66,15 @@ app.get("/orders", (req, res) => {
 });
 
 /* =========================
-   پشتیبانی دوطرفه واقعی
+   پشتیبانی
 ========================= */
 
 app.post("/support", (req, res) => {
+
+  if (!req.body.name || !req.body.msg) {
+    return res.json({ success: false });
+  }
+
   const msg = {
     id: Date.now().toString(),
     name: req.body.name,
@@ -77,20 +85,22 @@ app.post("/support", (req, res) => {
 
   supports.push(msg);
 
-  res.json({ success: true });
+  res.json({ success: true, msg });
 });
 
 app.get("/support", (req, res) => {
   res.json(supports);
 });
 
-/* پاسخ ادمین */
 app.post("/support/reply/:id", (req, res) => {
+
   const msg = supports.find(s => s.id === req.params.id);
 
-  if (msg) {
-    msg.reply = req.body.reply;
+  if (!msg) {
+    return res.json({ success: false });
   }
+
+  msg.reply = req.body.reply;
 
   res.json({ success: true });
 });
