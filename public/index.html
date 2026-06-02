@@ -2,29 +2,16 @@
 <html lang="fa">
 
 <head>
-<<<<<<< HEAD
-
-<title>مزون ایلا</title>
-
-<meta charset="UTF-8">
-=======
 <meta charset="UTF-8">
 <title>مزون ایلا</title>
->>>>>>> b881b0db09f6930f1e8ba070b674a5764f1a4fc8
 
 <style>
 
 body{
-<<<<<<< HEAD
-  background:white;
-  font-family:tahoma;
-  padding:20px;
-=======
   background:#f5f5f5;
   font-family:tahoma;
   padding:20px;
   margin:0;
->>>>>>> b881b0db09f6930f1e8ba070b674a5764f1a4fc8
 }
 
 .topbar{
@@ -32,13 +19,10 @@ body{
   justify-content:space-between;
   align-items:center;
   margin-bottom:20px;
-<<<<<<< HEAD
-=======
   background:white;
   padding:15px;
   border-radius:15px;
   box-shadow:0 0 10px rgba(0,0,0,0.1);
->>>>>>> b881b0db09f6930f1e8ba070b674a5764f1a4fc8
 }
 
 #products{
@@ -48,12 +32,6 @@ body{
 }
 
 .card{
-<<<<<<< HEAD
-  border:1px solid #ddd;
-  border-radius:15px;
-  overflow:hidden;
-  box-shadow:0 0 10px rgba(0,0,0,0.1);
-=======
   background:white;
   border-radius:15px;
   overflow:hidden;
@@ -63,7 +41,6 @@ body{
 
 .card:hover{
   transform:translateY(-5px);
->>>>>>> b881b0db09f6930f1e8ba070b674a5764f1a4fc8
 }
 
 .card img{
@@ -78,11 +55,8 @@ body{
 
 .price{
   color:red;
-  font-size:20px;
-<<<<<<< HEAD
-=======
+  font-size:18px;
   font-weight:bold;
->>>>>>> b881b0db09f6930f1e8ba070b674a5764f1a4fc8
 }
 
 button{
@@ -93,11 +67,6 @@ button{
   width:100%;
   cursor:pointer;
   border-radius:10px;
-<<<<<<< HEAD
-}
-
-/* سبد خرید */
-=======
   margin-top:5px;
 }
 
@@ -105,9 +74,7 @@ button:hover{
   opacity:0.9;
 }
 
-/* سبد خرید */
-
->>>>>>> b881b0db09f6930f1e8ba070b674a5764f1a4fc8
+/* cart */
 #cartBox{
   position:fixed;
   top:0;
@@ -119,51 +86,27 @@ button:hover{
   padding:20px;
   transition:0.4s;
   overflow:auto;
-<<<<<<< HEAD
-=======
   z-index:999;
->>>>>>> b881b0db09f6930f1e8ba070b674a5764f1a4fc8
 }
 
 #cartBox.active{
   right:0;
 }
 
-<<<<<<< HEAD
-.cartItem{
-  display:flex;
-  align-items:center;
-  gap:15px;
-=======
-.closeBtn{
-  background:black;
-  margin-bottom:15px;
-}
-
 .cartItem{
   display:flex;
   gap:10px;
->>>>>>> b881b0db09f6930f1e8ba070b674a5764f1a4fc8
   border-bottom:1px solid #444;
   padding:10px 0;
 }
 
 .cartItem img{
-<<<<<<< HEAD
-  width:80px;
-  height:80px;
-=======
   width:70px;
   height:70px;
->>>>>>> b881b0db09f6930f1e8ba070b674a5764f1a4fc8
   object-fit:cover;
   border-radius:10px;
 }
 
-<<<<<<< HEAD
-/* فرم مشتری */
-=======
->>>>>>> b881b0db09f6930f1e8ba070b674a5764f1a4fc8
 input{
   width:100%;
   padding:10px;
@@ -172,10 +115,7 @@ input{
   border:none;
 }
 
-<<<<<<< HEAD
-=======
-/* پشتیبانی */
-
+/* support */
 #supportBtn{
   position:fixed;
   bottom:20px;
@@ -190,7 +130,6 @@ input{
   align-items:center;
   font-size:30px;
   cursor:pointer;
-  box-shadow:0 0 15px rgba(0,0,0,0.3);
   z-index:999;
 }
 
@@ -202,136 +141,54 @@ input{
   background:white;
   border-radius:15px;
   padding:15px;
-  box-shadow:0 0 20px rgba(0,0,0,0.2);
   display:none;
   z-index:999;
 }
 
-#supportBox textarea{
-  width:100%;
-  height:100px;
-  padding:10px;
-  border-radius:10px;
-  border:1px solid #ddd;
-  margin-top:10px;
-}
-
->>>>>>> b881b0db09f6930f1e8ba070b674a5764f1a4fc8
 </style>
 
 </head>
 
 <body>
 
-<<<<<<< HEAD
-<!-- بالا -->
-=======
-<!-- هدر -->
-
->>>>>>> b881b0db09f6930f1e8ba070b674a5764f1a4fc8
 <div class="topbar">
-
   <h1>مزون ایلا</h1>
 
   <h2 onclick="openCart()" style="cursor:pointer">
-    🛒 سبد خرید:
-    <span id="cartCount">0</span>
+    🛒 سبد خرید: <span id="cartCount">0</span>
   </h2>
-
 </div>
 
-<!-- محصولات -->
-<<<<<<< HEAD
 <div id="products"></div>
 
-<!-- سبد خرید -->
+<!-- CART -->
 <div id="cartBox">
 
-  <h2>سبد خرید 🛒</h2>
+  <h2>سبد خرید</h2>
 
   <div id="cartItems"></div>
 
-  <h3 id="totalPrice">مجموع: 0 تومان</h3>
+  <h3 id="totalPrice">0 تومان</h3>
 
-  <!-- 👇 اطلاعات مشتری -->
-  <hr>
+  <input id="name" placeholder="نام">
+  <input id="phone" placeholder="شماره">
+  <input id="address" placeholder="آدرس">
 
-  <h3>اطلاعات سفارش 🧾</h3>
-
-  <input id="custName" placeholder="نام و نام خانوادگی">
-  <input id="custPhone" placeholder="شماره تماس">
-  <input id="custAddress" placeholder="آدرس کامل">
-
-  <button onclick="clearCart()">خالی کردن سبد</button>
-
-  <br><br>
-
-  <button onclick="checkout()">ثبت سفارش 🧾</button>
+  <button onclick="clearCart()">خالی کردن</button>
+  <button onclick="checkout()">ثبت سفارش</button>
 
 </div>
 
-<!-- JS -->
-=======
-
-<div id="products"></div>
-
-<!-- سبد خرید -->
-
-<div id="cartBox">
-
-<button class="closeBtn" onclick="openCart()">
-✖ بستن
-</button>
-
-<h2>سبد خرید 🛒</h2>
-
-<div id="cartItems"></div>
-
-<h3 id="totalPrice">مجموع: 0 تومان</h3>
-
-<hr>
-
-<h3>اطلاعات مشتری</h3>
-
-<input id="name" placeholder="نام">
-
-<input id="phone" placeholder="شماره">
-
-<input id="address" placeholder="آدرس">
-
-<button onclick="clearCart()">
-خالی کردن سبد
-</button>
-
-<button onclick="checkout()">
-ثبت سفارش
-</button>
-
-</div>
-
-<!-- دکمه پشتیبانی -->
-
-<div id="supportBtn" onclick="openSupport()">
-💬
-</div>
-
-<!-- باکس پشتیبانی -->
+<!-- SUPPORT -->
+<div id="supportBtn" onclick="openSupport()">💬</div>
 
 <div id="supportBox">
-
-<h3>پشتیبانی آنلاین</h3>
-
-<input id="supportName" placeholder="نام">
-
-<textarea id="supportMsg" placeholder="پیام..."></textarea>
-
-<button onclick="sendSupport()">
-ارسال پیام
-</button>
-
+  <h3>پشتیبانی</h3>
+  <input id="supportName" placeholder="نام">
+  <input id="supportMsg" placeholder="پیام">
+  <button onclick="sendSupport()">ارسال</button>
 </div>
 
->>>>>>> b881b0db09f6930f1e8ba070b674a5764f1a4fc8
 <script>
 
 let cart = JSON.parse(localStorage.getItem("cart")) || [];
@@ -339,242 +196,79 @@ let cart = JSON.parse(localStorage.getItem("cart")) || [];
 loadProducts();
 updateCart();
 
-<<<<<<< HEAD
-/* گرفتن محصولات */
+/* products */
 async function loadProducts(){
-
-  const res = await fetch("/products");
-  const products = await res.json();
-=======
-/* =========================
-   محصولات
-========================= */
-
-async function loadProducts(){
-
   const res = await fetch("/products");
   const data = await res.json();
->>>>>>> b881b0db09f6930f1e8ba070b674a5764f1a4fc8
 
   const box = document.getElementById("products");
-
   box.innerHTML = "";
 
-<<<<<<< HEAD
-  products.forEach(product => {
-=======
-  data.forEach(p => {
->>>>>>> b881b0db09f6930f1e8ba070b674a5764f1a4fc8
-
+  data.forEach(p=>{
     box.innerHTML += `
       <div class="card">
-
-<<<<<<< HEAD
-        <img src="${product.image}">
-
-        <div class="info">
-
-          <h3>${product.name}</h3>
-
-          <p class="price">${product.price} تومان</p>
-
-          <button onclick='addToCart(${JSON.stringify(product)})'>
-            افزودن به سبد
-=======
         <img src="${p.image}">
-
         <div class="info">
-
           <h3>${p.name}</h3>
-
-          <p class="price">
-            ${p.price} تومان
-          </p>
-
-          <button onclick='addToCart(${JSON.stringify(p)})'>
-            افزودن
->>>>>>> b881b0db09f6930f1e8ba070b674a5764f1a4fc8
-          </button>
-
+          <p class="price">${p.price} تومان</p>
+          <button onclick='addToCart(${JSON.stringify(p)})'>افزودن</button>
         </div>
-
       </div>
     `;
-
   });
-
 }
 
-<<<<<<< HEAD
-/* افزودن */
-function addToCart(product){
-
-  cart.push(product);
-
-  localStorage.setItem("cart", JSON.stringify(cart));
-=======
-/* =========================
-   سبد خرید
-========================= */
-
+/* cart */
 function addToCart(p){
-
   cart.push(p);
-
-  localStorage.setItem(
-    "cart",
-    JSON.stringify(cart)
-  );
->>>>>>> b881b0db09f6930f1e8ba070b674a5764f1a4fc8
-
+  localStorage.setItem("cart", JSON.stringify(cart));
   updateCart();
-
 }
 
-<<<<<<< HEAD
-/* آپدیت */
 function updateCart(){
 
   document.getElementById("cartCount").innerText = cart.length;
 
-  const cartItems = document.getElementById("cartItems");
-
-  cartItems.innerHTML = "";
-
-  let total = 0;
-
-  cart.forEach((item, index) => {
-
-    total += Number(item.price);
-
-    cartItems.innerHTML += `
-=======
-function updateCart(){
-
-  document.getElementById("cartCount")
-  .innerText = cart.length;
-
-  let box =
-    document.getElementById("cartItems");
-
+  const box = document.getElementById("cartItems");
   box.innerHTML = "";
 
   let total = 0;
 
-  cart.forEach((item, i) => {
-
-    total += Number(item.price);
+  cart.forEach((i,index)=>{
+    total += Number(i.price);
 
     box.innerHTML += `
->>>>>>> b881b0db09f6930f1e8ba070b674a5764f1a4fc8
       <div class="cartItem">
-
-        <img src="${item.image}">
-
+        <img src="${i.image}">
         <div>
-
-<<<<<<< HEAD
-          <h3>${item.name}</h3>
-
-          <p>${item.price} تومان</p>
-
+          <p>${i.name}</p>
+          <p>${i.price}</p>
           <button onclick="removeItem(${index})">حذف</button>
-=======
-          <p>${item.name}</p>
-
-          <p>${item.price} تومان</p>
-
-          <button onclick="removeItem(${i})">
-            حذف
-          </button>
->>>>>>> b881b0db09f6930f1e8ba070b674a5764f1a4fc8
-
         </div>
-
       </div>
     `;
-
   });
 
-<<<<<<< HEAD
-  document.getElementById("totalPrice").innerText =
-=======
-  document.getElementById("totalPrice")
-  .innerText =
->>>>>>> b881b0db09f6930f1e8ba070b674a5764f1a4fc8
-    "مجموع: " + total + " تومان";
-
+  document.getElementById("totalPrice").innerText = total + " تومان";
 }
 
-<<<<<<< HEAD
-/* حذف */
-function removeItem(index){
-
-  cart.splice(index, 1);
-
-  localStorage.setItem("cart", JSON.stringify(cart));
-=======
 function removeItem(i){
-
   cart.splice(i,1);
-
-  localStorage.setItem(
-    "cart",
-    JSON.stringify(cart)
-  );
->>>>>>> b881b0db09f6930f1e8ba070b674a5764f1a4fc8
-
+  localStorage.setItem("cart", JSON.stringify(cart));
   updateCart();
-
 }
 
-<<<<<<< HEAD
-/* خالی */
-=======
->>>>>>> b881b0db09f6930f1e8ba070b674a5764f1a4fc8
 function clearCart(){
-
   cart = [];
-
   localStorage.removeItem("cart");
-
   updateCart();
-
 }
 
-<<<<<<< HEAD
-/* باز کردن سبد */
-=======
->>>>>>> b881b0db09f6930f1e8ba070b674a5764f1a4fc8
 function openCart(){
-
-  document.getElementById("cartBox")
-  .classList.toggle("active");
-
+  document.getElementById("cartBox").classList.toggle("active");
 }
 
-<<<<<<< HEAD
-/* ثبت سفارش واقعی */
-async function checkout(){
-
-  if(cart.length === 0){
-    alert("سبد خرید خالی است ❌");
-    return;
-  }
-
-  // گرفتن اطلاعات مشتری
-  const name = document.getElementById("custName").value;
-  const phone = document.getElementById("custPhone").value;
-  const address = document.getElementById("custAddress").value;
-
-  if(!name || !phone || !address){
-    alert("لطفاً اطلاعات را کامل وارد کنید ❌");
-    return;
-=======
-/* =========================
-   ثبت سفارش
-========================= */
-
+/* checkout */
 async function checkout(){
 
   if(cart.length === 0){
@@ -582,173 +276,61 @@ async function checkout(){
     return;
   }
 
-  const name =
-    document.getElementById("name").value;
-
-  const phone =
-    document.getElementById("phone").value;
-
-  const address =
-    document.getElementById("address").value;
+  const name = document.getElementById("name").value;
+  const phone = document.getElementById("phone").value;
+  const address = document.getElementById("address").value;
 
   if(!name || !phone || !address){
-
     alert("اطلاعات کامل نیست");
-
     return;
-
->>>>>>> b881b0db09f6930f1e8ba070b674a5764f1a4fc8
   }
 
   let total = 0;
+  cart.forEach(i=> total += Number(i.price));
 
-<<<<<<< HEAD
-  cart.forEach(item => {
-    total += Number(item.price);
-  });
-
-  const res = await fetch("/create-order", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json"
-    },
-    body: JSON.stringify({
-      items: cart,
-      total: total,
-=======
-  cart.forEach(i => {
-    total += Number(i.price);
-  });
-
-  const res = await fetch("/create-order", {
-
+  const res = await fetch("/create-order",{
     method:"POST",
-
-    headers:{
-      "Content-Type":"application/json"
-    },
-
-    body: JSON.stringify({
-
-      items: cart,
-
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({
+      items:cart,
       total,
-
->>>>>>> b881b0db09f6930f1e8ba070b674a5764f1a4fc8
-      customer: {
-        name,
-        phone,
-        address
-      }
-<<<<<<< HEAD
+      customer:{name,phone,address}
     })
-=======
-
-    })
-
->>>>>>> b881b0db09f6930f1e8ba070b674a5764f1a4fc8
   });
 
   const data = await res.json();
 
   if(data.success){
-
-    alert("سفارش ثبت شد ✅");
-
+    alert("سفارش ثبت شد");
     cart = [];
-<<<<<<< HEAD
-=======
-
->>>>>>> b881b0db09f6930f1e8ba070b674a5764f1a4fc8
     localStorage.removeItem("cart");
-
     updateCart();
-
-  } else {
-<<<<<<< HEAD
-    alert("خطا در ثبت سفارش ❌");
-=======
-
-    alert("خطا ❌");
-
   }
-
 }
 
-/* =========================
-   پشتیبانی
-========================= */
-
+/* support */
 function openSupport(){
-
-  const box =
-    document.getElementById("supportBox");
-
-  if(box.style.display === "block"){
-
-    box.style.display = "none";
-
-  } else {
-
-    box.style.display = "block";
-
-  }
-
+  const box = document.getElementById("supportBox");
+  box.style.display = box.style.display === "block" ? "none" : "block";
 }
 
 async function sendSupport(){
 
-  const name =
-    document.getElementById("supportName").value;
+  const name = document.getElementById("supportName").value;
+  const msg = document.getElementById("supportMsg").value;
 
-  const msg =
-    document.getElementById("supportMsg").value;
-
-  if(!name || !msg){
-
-    alert("فیلدها کامل نیست");
-
-    return;
-
-  }
-
-  const res = await fetch("/support", {
-
+  await fetch("/support",{
     method:"POST",
-
-    headers:{
-      "Content-Type":"application/json"
-    },
-
-    body: JSON.stringify({
-      name,
-      msg
-    })
-
+    headers:{"Content-Type":"application/json"},
+    body:JSON.stringify({name,msg})
   });
 
-  const data = await res.json();
-
-  if(data.success){
-
-    alert("پیام ارسال شد ✅");
-
-    document.getElementById("supportMsg").value = "";
-
-  } else {
-
-    alert("خطا ❌");
-
->>>>>>> b881b0db09f6930f1e8ba070b674a5764f1a4fc8
-  }
-
+  alert("ارسال شد");
+  document.getElementById("supportMsg").value = "";
 }
 
 </script>
 
 </body>
-<<<<<<< HEAD
 </html>
-=======
-</html>
->>>>>>> b881b0db09f6930f1e8ba070b674a5764f1a4fc8
+
