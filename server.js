@@ -3,6 +3,7 @@ const path = require("path");
 const http = require("http");
 const { Server } = require("socket.io");
 const multer = require("multer");
+const fs = require("fs");
 
 const app = express();
 const server = http.createServer(app);
@@ -16,12 +17,21 @@ app.use(express.static(path.join(__dirname, "public")));
 app.use(express.json());
 
 /* =========================
+   ساخت پوشه آپلود اگر نبود
+========================= */
+
+const uploadDir = path.join(__dirname, "public/uploads");
+if (!fs.existsSync(uploadDir)) {
+  fs.mkdirSync(uploadDir, { recursive: true });
+}
+
+/* =========================
    Upload setup
 ========================= */
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "public/uploads");
+    cb(null, uploadDir);
   },
   filename: (req, file, cb) => {
     cb(null, Date.now() + "-" + file.originalname);
@@ -31,7 +41,7 @@ const storage = multer.diskStorage({
 const upload = multer({ storage });
 
 /* =========================
-   دیتابیس ساده
+   دیتابیس ساده (RAM)
 ========================= */
 
 let products = [];
@@ -44,16 +54,21 @@ let messages = [];
 ========================= */
 
 app.post("/add-product", upload.single("image"), (req, res) => {
-  const product = {
-    id: Date.now().toString(),
-    name: req.body.name,
-    price: Number(req.body.price),
-    image: req.file ? "/uploads/" + req.file.filename : ""
-  };
+  try {
+    const product = {
+      id: Date.now().toString(),
+      name: req.body.name,
+      price: Number(req.body.price),
+      image: req.file ? "/uploads/" + req.file.filename : ""
+    };
 
-  products.push(product);
+    products.push(product);
 
-  res.json({ success: true, product });
+    res.json({ success: true, product });
+
+  } catch (err) {
+    res.status(500).json({ success: false, error: err.message });
+  }
 });
 
 /* =========================
@@ -142,6 +157,8 @@ app.delete("/support/:id", (req, res) => {
 ========================= */
 
 io.on("connection", (socket) => {
+  console.log("User connected:", socket.id);
+
   socket.emit("chat_history", messages);
 
   socket.on("send_message", (data) => {
@@ -154,6 +171,10 @@ io.on("connection", (socket) => {
 
     messages.push(msg);
     io.emit("new_message", msg);
+  });
+
+  socket.on("disconnect", () => {
+    console.log("User disconnected");
   });
 });
 
