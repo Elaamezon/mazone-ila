@@ -1,6 +1,7 @@
 {
   "name": "shop",
   "version": "1.0.0",
+<<<<<<< HEAD
   "description": "",
   "main": "index.js",
   "scripts": {
@@ -14,5 +15,16 @@
     "express": "^5.2.1",
     "multer": "^2.1.1",
     "socket.io": "^4.8.3"
+=======
+  "description": "Mazone Ila Shop",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "dependencies": {
+    "express": "^5.1.0",
+    "socket.io": "^4.8.1",
+    "multer": "^2.0.2"
+>>>>>>> b881b0db09f6930f1e8ba070b674a5764f1a4fc8
   }
 }

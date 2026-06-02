@@ -1,0 +1,10 @@
+function addProduct() {
+  let input = document.getElementById("product");
+  let list = document.getElementById("list");
+
+  let li = document.createElement("li");
+  li.innerText = input.value;
+
+  list.appendChild(li);
+  input.value = "";
+}
