@@ -1,0 +1,152 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+<meta charset="UTF-8">
+<title>سفارش‌های من</title>
+
+<style>
+body{
+  font-family:tahoma;
+  background:#0f0f0f;
+  color:white;
+  padding:20px;
+}
+
+input, button{
+  padding:10px;
+  margin:5px 0;
+  border:none;
+  border-radius:10px;
+}
+
+button{
+  background:#ff2d55;
+  color:white;
+  cursor:pointer;
+}
+
+.card{
+  background:#1a1a1a;
+  padding:15px;
+  margin-top:10px;
+  border-radius:10px;
+}
+
+.status{
+  padding:5px 10px;
+  border-radius:8px;
+  display:inline-block;
+  margin-top:5px;
+}
+
+.pending{ background:orange; }
+.shipped{ background:blue; }
+.done{ background:green; }
+
+a{
+  color:#ff2d55;
+  text-decoration:none;
+}
+</style>
+
+</head>
+
+<body>
+
+<h1>🧾 سفارش‌های من</h1>
+
+<a href="/">⬅ بازگشت به فروشگاه</a>
+
+<hr>
+
+<input id="phone" placeholder="شماره موبایل">
+<button onclick="loadOrders()">نمایش سفارش‌ها</button>
+
+<div id="orders"></div>
+
+<script>
+
+// =======================
+// LOAD ORDERS BY PHONE
+// =======================
+async function loadOrders(){
+
+  const phone = document.getElementById("phone").value;
+
+  if(!phone){
+    alert("شماره موبایل را وارد کن");
+    return;
+  }
+
+  const res = await fetch("/api/orders");
+  const data = await res.json();
+
+  const box = document.getElementById("orders");
+  box.innerHTML = "";
+
+  const myOrders = data.filter(o => 
+    o.customer?.phone === phone
+  );
+
+  if(myOrders.length === 0){
+    box.innerHTML = "<p>هیچ سفارشی پیدا نشد 😢</p>";
+    return;
+  }
+
+  myOrders.forEach(o => {
+
+    let statusClass = "pending";
+
+    if(o.status === "ارسال شد") statusClass = "shipped";
+    if(o.status === "تحویل شد") statusClass = "done";
+
+    box.innerHTML += `
+      <div class="card">
+
+        <h3>🧾 سفارش #${o.id}</h3>
+
+        <p>💰 مبلغ: ${o.total} تومان</p>
+
+        <p class="status ${statusClass}">
+          📦 وضعیت: ${o.status}
+        </p>
+
+        <button onclick="showItems(${o.id})">
+          مشاهده محصولات
+        </button>
+
+      </div>
+    `;
+  });
+}
+
+// =======================
+// SHOW ITEMS
+// =======================
+function showItems(id){
+
+  fetch("/api/orders")
+    .then(res => res.json())
+    .then(data => {
+
+      const order = data.find(o => o.id == id);
+
+      if(!order){
+        alert("سفارش پیدا نشد");
+        return;
+      }
+
+      let text = "";
+
+      order.items.forEach(i => {
+        text += `${i.name} - ${i.price}\n`;
+      });
+
+      alert(text);
+    });
+}
+
+</script>
+
+</body>
+</html>
